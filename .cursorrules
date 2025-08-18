@@ -250,6 +250,36 @@ Remember these key project facts:
 - **AFTER merges**: Deployment and monitoring agents execute
 - **ON schedule**: Performance and security scanning agents run
 
+## AI-Driven Development Framework
+
+### Core AI Agents
+- **AI Project Orchestrator**: Lead agent for sprint management, epic tracking, and team coordination
+- **AI Architecture Governance**: Technical oversight and best practices enforcement  
+- **AI Process Optimization**: Workflow optimization and efficiency tracking
+- **AI Documentation & Context**: Documentation management and context preservation
+- **AI Quality Assurance**: Quality gates enforcement and expert validation
+
+### Chat Length Management
+- **ALWAYS monitor** chat token usage with automated tracking
+- **WARNING at 70%**: Begin preparing for context transition
+- **CRITICAL at 85%**: Immediately generate handoff document and transition
+- **PRESERVE context** through comprehensive handoff documentation
+- **SEAMLESS transitions** with detailed next-session instructions
+
+### Expert-Driven Decisions
+- **BEFORE major decisions**: Consult AI agents with expert profile integration
+- **DURING implementation**: Follow expert quality gates and decision frameworks
+- **AFTER completion**: Validate against expert quality criteria through AI validation
+- **FOR conflicts**: Use expert hierarchy and AI-assisted escalation paths
+- **CONTINUOUS learning**: Capture and apply expert insights via AI agents
+
+### AI Sprint Management
+- **AUTO-CREATE** GitHub issues from conversation requirements
+- **REAL-TIME tracking** of sprint progress via AI Project Orchestrator
+- **AUTOMATED updates** to sprint execution plans and velocity calculations
+- **PROACTIVE identification** of blockers and impediments
+- **INTELLIGENT estimation** of story points and timeline adjustments
+
 ## Enforcement
 
 If any of these rules are violated:

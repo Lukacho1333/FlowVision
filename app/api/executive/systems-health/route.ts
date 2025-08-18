@@ -112,7 +112,8 @@ export async function GET(request: NextRequest) {
       healthScore: calculateSystemHealthScore(
         system._count.id, 
         system._avg.heatmapScore || 0
-      )
+      ),
+      riskScore: system._count.id * (system._avg.heatmapScore || 0) // Calculate risk score
     }));
 
     // Identify critical systems requiring attention

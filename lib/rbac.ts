@@ -2,7 +2,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from './auth';
 import { prisma } from './prisma';
 
-export type Role = 'ADMIN' | 'LEADER';
+export type Role = 'ADMIN' | 'LEADER' | 'VIEWER';
 export type Permission =
   | 'manage_users'
   | 'view_all_initiatives'
@@ -24,6 +24,7 @@ const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
     'system_settings',
   ],
   LEADER: ['view_all_initiatives', 'export_data'],
+  VIEWER: [], // Viewers have minimal permissions by default
 };
 
 export async function getCurrentUser() {

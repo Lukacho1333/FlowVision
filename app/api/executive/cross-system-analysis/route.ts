@@ -209,7 +209,7 @@ async function findMultiSystemInitiatives(organizationId: string) {
     .map(init => {
       const affectedSystems = Array.from(new Set(
         init.addressedIssues.map(issue => issue.category).filter(Boolean)
-      ));
+      )) as string[];
       
       return {
         id: init.id,
@@ -244,7 +244,7 @@ async function buildSystemCorrelationMatrix(organizationId: string) {
   // Get unique systems
   const systems = Array.from(new Set(
     issues.map(issue => issue.category).filter(Boolean)
-  ));
+  )) as string[];
 
   // Build correlation matrix
   const matrix = systems.map(systemA => ({

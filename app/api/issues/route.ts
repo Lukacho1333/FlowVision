@@ -47,6 +47,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    // Get user details for organization and ID
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email },
+    });
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+
     const body = await req.json();
     const { description, selectedCategories, validationResult, aiSuggestions } = body;
 
@@ -100,52 +108,43 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    const issueData: any = {
+      description: description.trim(),
+      votes: 1, // Creator automatically votes
+      heatmapScore,
+      organizationId: user.organizationId,
+      authorId: user.id
+    };
+
+    // Conditionally add optional fields to avoid Prisma type conflicts
+    if (businessAreaId) issueData.businessAreaId = businessAreaId;
+    if (departmentId) issueData.departmentId = departmentId;
+    if (impactTypeId) issueData.impactTypeId = impactTypeId;
+    if (validationResult?.score) issueData.qualityScore = validationResult.score;
+    if (validationResult?.completeness) {
+      issueData.completenessScore = Object.values(validationResult.completeness).filter(Boolean).length * 20;
+      issueData.validationDetails = {
+        feedback: validationResult.feedback,
+        completeness: validationResult.completeness,
+        isValid: validationResult.isValid,
+      };
+    }
+    if (aiSuggestions?.aiConfidence) issueData.categoryConfidence = aiSuggestions.aiConfidence;
+    if (aiSuggestions) issueData.suggestionMetadata = aiSuggestions;
+
     const issue = await prisma.issue.create({
-      data: {
-        description: description.trim(),
-        votes: 1, // Creator automatically votes
-        heatmapScore,
-
-        // AI Classification Fields (Story 2.3)
-        businessAreaId,
-        departmentId,
-        impactTypeId,
-
-        // Smart Validation Fields (Story 2.2)
-        qualityScore: validationResult?.score,
-        completenessScore: validationResult?.completeness
-          ? Object.values(validationResult.completeness).filter(Boolean).length * 20
-          : undefined,
-        validationDetails: validationResult
-          ? {
-              feedback: validationResult.feedback,
-              completeness: validationResult.completeness,
-              isValid: validationResult.isValid,
-            }
-          : undefined,
-
-        // AI Suggestion Metadata
-        categoryConfidence: aiSuggestions?.aiConfidence,
-        suggestionMetadata: aiSuggestions
-          ? {
-              suggestions: aiSuggestions.suggestions,
-              duplicateCheck: aiSuggestions.duplicateCheck,
-              generatedAt: new Date().toISOString(),
-            }
-          : undefined,
-      },
+      data: issueData,
       include: {
-        businessArea: true,
-        departmentCategory: true,
-        impactType: true,
+        User: {
+          select: {
+            name: true,
+            email: true
+          }
+        }
       },
     });
 
     // Log the action
-    const user = await prisma.user.findUnique({
-      where: { email: session.user.email },
-    });
-
     if (user) {
       await prisma.auditLog.create({
         data: {

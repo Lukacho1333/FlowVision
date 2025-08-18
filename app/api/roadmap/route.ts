@@ -2,16 +2,15 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { getMultiTenantContext, createTenantWhereClause } from '@/lib/multi-tenant-utils';
 
 // Force dynamic server-side rendering for this API route
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.email) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    // SECURITY: Enforce multi-tenant isolation following .cursorrules
+    const tenantContext = await getMultiTenantContext(request);
 
     const { searchParams } = new URL(request.url);
     const view = searchParams.get('view') || 'timeline';
@@ -20,8 +19,8 @@ export async function GET(request: NextRequest) {
     const startDate = searchParams.get('startDate');
     const endDate = searchParams.get('endDate');
 
-    // Build filter conditions
-    const where: any = {};
+    // Build filter conditions with MANDATORY organizationId isolation
+    const where = createTenantWhereClause(tenantContext, {});
 
     if (phase) {
       where.phase = phase;
@@ -66,12 +65,6 @@ export async function GET(request: NextRequest) {
       include: {
         owner: {
           select: { id: true, name: true, email: true },
-        },
-        dependencies: {
-          select: { id: true, title: true, status: true },
-        },
-        dependents: {
-          select: { id: true, title: true, status: true },
         },
         milestones: {
           orderBy: { dueDate: 'asc' },
@@ -170,10 +163,11 @@ export async function GET(request: NextRequest) {
       roadmapData.teamUtilization = teamUtilization;
     }
 
-    // Log audit event
+    // Log audit event with tenant isolation
     await prisma.auditLog.create({
       data: {
-        userId: session.user.id,
+        userId: tenantContext.userId,
+        organizationId: tenantContext.organizationId,
         action: 'ROADMAP_VIEW',
         details: { view, filters: { phase, team, startDate, endDate } },
       },

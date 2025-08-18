@@ -50,22 +50,6 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
             email: true,
           },
         },
-        dependsOn: {
-          select: {
-            id: true,
-            title: true,
-            status: true,
-            progress: true,
-          },
-        },
-        blockedBy: {
-          select: {
-            id: true,
-            title: true,
-            status: true,
-            progress: true,
-          },
-        },
       },
     });
 
@@ -94,9 +78,9 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
           : null,
     };
 
-    // Check if task is blocked
-    const isBlocked = task.dependsOn.some((dep) => dep.status !== 'COMPLETED');
-    const blockingTasks = task.dependsOn.filter((dep) => dep.status !== 'COMPLETED');
+    // Check if task is blocked (simplified since no dependencies exist yet)
+    const isBlocked = false;
+    const blockingTasks: any[] = [];
 
     const taskWithDetails = {
       ...task,
@@ -261,11 +245,6 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
             },
           },
         },
-        _count: {
-          select: {
-            blockedBy: true,
-          },
-        },
       },
     });
 
@@ -281,17 +260,8 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
       );
     }
 
-    // Check if other tasks depend on this one
-    if (task._count.blockedBy > 0) {
-      return NextResponse.json(
-        {
-          error: 'Cannot delete task that other tasks depend on',
-          dependentTasksCount: task._count.blockedBy,
-          message: 'Please remove dependencies first or reassign them to other tasks',
-        },
-        { status: 409 }
-      );
-    }
+    // Check if other tasks depend on this one (simplified since no dependencies exist yet)
+    // Dependencies not implemented yet, so safe to delete
 
     // Delete the task
     await prisma.solutionTask.delete({

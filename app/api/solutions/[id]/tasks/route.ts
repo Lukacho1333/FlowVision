@@ -83,20 +83,6 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
             email: true,
           },
         },
-        dependsOn: {
-          select: {
-            id: true,
-            title: true,
-            status: true,
-          },
-        },
-        blockedBy: {
-          select: {
-            id: true,
-            title: true,
-            status: true,
-          },
-        },
       },
       orderBy: [{ priority: 'desc' }, { status: 'asc' }, { createdAt: 'asc' }],
     });

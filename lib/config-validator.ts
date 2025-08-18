@@ -169,12 +169,13 @@ export class ConfigurationValidator {
 
     try {
       // Schema validation
-      const schema = VALIDATION_SCHEMAS[category as keyof typeof VALIDATION_SCHEMAS]?.[key];
+      const categorySchemas = VALIDATION_SCHEMAS[category as keyof typeof VALIDATION_SCHEMAS];
+      const schema = categorySchemas && key in categorySchemas ? (categorySchemas as any)[key] : undefined;
       if (schema) {
         const schemaResult = schema.safeParse(value);
         if (!schemaResult.success) {
           result.valid = false;
-          schemaResult.error.errors.forEach((error) => {
+          schemaResult.error.errors.forEach((error: any) => {
             result.errors.push({
               field: error.path.join('.'),
               message: error.message,
@@ -586,7 +587,7 @@ export class ConfigurationValidator {
           },
         },
         orderBy: {
-          createdAt: 'desc',
+          timestamp: 'desc',
         },
         take: limit,
       });

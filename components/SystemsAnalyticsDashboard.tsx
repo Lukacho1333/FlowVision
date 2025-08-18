@@ -9,8 +9,8 @@ import {
   ExclamationTriangleIcon,
   CheckCircleIcon,
   ClockIcon,
-  TrendingUpIcon,
-  TrendingDownIcon,
+  ArrowTrendingUpIcon,
+  ArrowTrendingDownIcon,
 } from '@heroicons/react/24/outline';
 import {
   BarChart,
@@ -135,8 +135,8 @@ export default function SystemsAnalyticsDashboard() {
   };
 
   const getTrendIcon = (trend: string) => {
-    if (trend === 'improving') return <TrendingUpIcon className="w-5 h-5 text-green-500" />;
-    if (trend === 'declining') return <TrendingDownIcon className="w-5 h-5 text-red-500" />;
+    if (trend === 'improving') return <ArrowTrendingUpIcon className="w-5 h-5 text-green-500" />;
+    if (trend === 'declining') return <ArrowTrendingDownIcon className="w-5 h-5 text-red-500" />;
     return <ClockIcon className="w-5 h-5 text-gray-500" />;
   };
 
@@ -521,7 +521,7 @@ export default function SystemsAnalyticsDashboard() {
                     {roiData.portfolioOverview?.expectedROI || 0}%
                   </p>
                 </div>
-                <TrendingUpIcon className="w-8 h-8 text-green-500" />
+                <ArrowTrendingUpIcon className="w-8 h-8 text-green-500" />
               </div>
             </div>
 

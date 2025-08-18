@@ -109,7 +109,7 @@ async function calculateSystemROI(organizationId: string) {
   const systemGroups = initiatives.reduce((acc, initiative) => {
     const systems = Array.from(new Set(
       initiative.addressedIssues.map(issue => issue.category).filter(Boolean)
-    ));
+    )) as string[];
     
     systems.forEach(system => {
       if (!acc[system]) {
@@ -347,7 +347,7 @@ async function analyzeResourceAllocation(organizationId: string) {
   const systemResources = initiatives.reduce((acc, initiative) => {
     const systems = Array.from(new Set(
       initiative.addressedIssues.map(issue => issue.category).filter(Boolean)
-    ));
+    )) as string[];
     
     const totalHours = initiative.solutions?.reduce(
       (sum, sol) => sum + (sol.estimatedHours || 0), 0

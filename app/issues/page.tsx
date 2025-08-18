@@ -82,7 +82,7 @@ export default function IssuesPage() {
           systemConfig.getScoringThresholds(),
           systemConfig.getColorMapping(),
         ]);
-        setScoringConfig({ thresholds, colorMapping });
+        setScoringConfig({ thresholds, colorMapping: colorMapping as any });
       } catch (error) {
         console.error('Failed to load scoring configuration:', error);
         // Set fallback configuration

@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
     const aiConfig = await prisma.aIConfiguration.findUnique({
       where: { key: 'openai_config' },
     });
-    const currentModel = aiConfig?.value?.model || 'gpt-3.5-turbo';
+    const currentModel = (aiConfig?.value as any)?.model || 'gpt-3.5-turbo';
 
     const results = {
       issues: [] as any[],

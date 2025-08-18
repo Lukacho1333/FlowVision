@@ -36,13 +36,14 @@ export async function POST(req: NextRequest) {
     // Hash password
     const passwordHash = await bcrypt.hash(password, 10);
 
-    // Create user
+    // Create organization and user together
     const user = await prisma.user.create({
       data: {
         email,
         passwordHash,
         name,
         role,
+        organizationId: 'morrison-ae', // For demo, use Morrison AE organization
       },
       select: {
         id: true,

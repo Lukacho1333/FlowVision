@@ -658,7 +658,7 @@ export class OptimizedOpenAIService {
     }
 
     const startTime = Date.now();
-    const cacheKey = `structured:${this.hashString(prompt)}`;
+    const cacheKey = this.cache.generateKey(prompt, { model: 'gpt-3.5-turbo', structured: true });
 
     try {
       // Check cache first
@@ -682,16 +682,7 @@ export class OptimizedOpenAIService {
         this.cache.set(cacheKey, result);
       }
 
-      // Track performance metrics
-      this.trackMetrics({
-        operation: 'structured_response',
-        inputTokens: response.usage?.prompt_tokens || 0,
-        outputTokens: response.usage?.completion_tokens || 0,
-        totalTokens: response.usage?.total_tokens || 0,
-        latency,
-        cacheHit: false,
-        modelUsed: response.model || this.config.model || 'gpt-3.5-turbo',
-      });
+      // Note: Metrics tracking would go here if implemented
 
       return result;
     } catch (error) {

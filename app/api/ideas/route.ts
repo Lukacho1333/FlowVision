@@ -2,13 +2,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { getMultiTenantContext, createTenantWhereClause } from '@/lib/multi-tenant-utils';
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.email) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    // SECURITY: Enforce multi-tenant isolation following .cursorrules
+    const tenantContext = await getMultiTenantContext(request);
 
     const { searchParams } = new URL(request.url);
     const category = searchParams.get('category');
@@ -16,8 +15,8 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get('status');
     const sortBy = searchParams.get('sortBy') || 'newest';
 
-    // Build filter conditions
-    const where: any = {};
+    // Build filter conditions with MANDATORY tenant isolation
+    const where = createTenantWhereClause(tenantContext, {});
 
     if (category) {
       where.category = category;

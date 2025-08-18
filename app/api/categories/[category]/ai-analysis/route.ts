@@ -134,18 +134,18 @@ Focus on strategic business value, executive decision-making, and actionable ins
       // Get AI configuration for categorization operation
       const aiConfig = await systemConfig.getAIOperationConfig('categorization');
 
-      // Generate AI analysis using configurable parameters
-      const response = await openAIService.client!.chat.completions.create({
+      // Generate AI analysis using the service method
+      const analysisResult = await openAIService.generateCompletion(prompt, {
         model: aiConfig.model,
-        messages: [{ role: 'user', content: prompt }],
-        max_tokens: aiConfig.maxTokens,
+        maxTokens: aiConfig.maxTokens,
         temperature: aiConfig.temperature,
       });
 
-      const content = response.choices[0]?.message?.content;
-      if (!content) {
+      if (!analysisResult) {
         throw new Error('No content received from AI service');
       }
+      
+      const content = analysisResult;
 
       // Parse and validate response
       let analysisData: CategoryAIAnalysis;
@@ -250,16 +250,15 @@ Focus on strategic business value, executive decision-making, and actionable ins
       };
 
       // Record successful operation
-      await aiServiceMonitor.recordOperation(
-        'category_analysis',
-        'success',
+      aiServiceMonitor.recordOperation(
+        true,
         Date.now() - startTime
       );
 
       return NextResponse.json(responseData);
     } catch (aiError) {
       console.error('AI service error:', aiError);
-      await aiServiceMonitor.recordOperation('category_analysis', 'error', Date.now() - startTime);
+      aiServiceMonitor.recordOperation(false, Date.now() - startTime, 'AI_SERVICE_ERROR');
 
       return NextResponse.json(
         {

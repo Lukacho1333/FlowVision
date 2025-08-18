@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
   const profile = await prisma.businessProfile.upsert({
     where: { userId: user.id },
     update: { industry, size, metrics },
-    create: { userId: user.id, industry, size, metrics },
+    create: { userId: user.id, organizationId: user.organizationId, industry, size, metrics },
   });
   await prisma.auditLog.create({
     data: { userId: user.id, action: 'PROFILE_SAVE', details: { industry, size } },

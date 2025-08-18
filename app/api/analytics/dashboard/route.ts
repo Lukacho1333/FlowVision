@@ -2,18 +2,18 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { getMultiTenantContext } from '@/lib/multi-tenant-utils';
 
 // Force dynamic server-side rendering for this API route
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.email) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    // SECURITY: Enforce multi-tenant isolation following .cursorrules
+    const tenantContext = await getMultiTenantContext(request);
 
-    // Get efficiency metrics
+    // Get efficiency metrics - TENANT ISOLATED following .cursorrules
+    const orgFilter = { organizationId: tenantContext.organizationId };
     const [
       totalInitiatives,
       completedInitiatives,
@@ -25,39 +25,42 @@ export async function GET(request: NextRequest) {
       issuesOverTime,
       aiUsageStats,
     ] = await Promise.all([
-      // Total initiatives
-      prisma.initiative.count(),
+      // Total initiatives - TENANT ISOLATED
+      prisma.initiative.count({ where: orgFilter }),
 
-      // Completed initiatives
-      prisma.initiative.count({ where: { status: 'COMPLETED' } }),
+      // Completed initiatives - TENANT ISOLATED
+      prisma.initiative.count({ where: { ...orgFilter, status: 'COMPLETED' } }),
 
-      // Active initiatives
-      prisma.initiative.count({ where: { status: 'ACTIVE' } }),
+      // Active initiatives - TENANT ISOLATED
+      prisma.initiative.count({ where: { ...orgFilter, status: 'ACTIVE' } }),
 
-      // Total issues
-      prisma.issue.count(),
+      // Total issues - TENANT ISOLATED
+      prisma.issue.count({ where: orgFilter }),
 
-      // Resolved issues (using votes as a proxy for resolution)
-      prisma.issue.count({ where: { votes: { gte: 5 } } }),
+      // Resolved issues - TENANT ISOLATED
+      prisma.issue.count({ where: { ...orgFilter, votes: { gte: 5 } } }),
 
-      // Recent activity (last 7 days)
+      // Recent activity - TENANT ISOLATED
       prisma.auditLog.count({
         where: {
+          ...orgFilter,
           timestamp: {
             gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
           },
         },
       }),
 
-      // Initiatives by phase
+      // Initiatives by phase - TENANT ISOLATED
       prisma.initiative.groupBy({
         by: ['phase'],
+        where: orgFilter,
         _count: true,
       }),
 
-      // Issues over time (last 30 days)
+      // Issues over time - TENANT ISOLATED
       prisma.issue.findMany({
         where: {
+          ...orgFilter,
           createdAt: {
             gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
           },
@@ -69,9 +72,10 @@ export async function GET(request: NextRequest) {
         orderBy: { createdAt: 'asc' },
       }),
 
-      // AI usage statistics
+      // AI usage statistics - TENANT ISOLATED
       prisma.auditLog.count({
         where: {
+          ...orgFilter,
           action: {
             startsWith: 'AI_',
           },

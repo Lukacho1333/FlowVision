@@ -135,83 +135,47 @@ export async function seedTaxonomy(): Promise<void> {
   console.log('🌱 Seeding taxonomy data...');
 
   try {
-    // Seed business areas
-    for (const area of BUSINESS_AREAS) {
-      await prisma.systemCategory.upsert({
-        where: {
-          name_type_organizationId: {
-            name: area.name,
-            type: area.type,
-            organizationId: null,
-          },
-        },
-        update: {
-          description: area.description,
-          isActive: true,
-          isDefault: true,
-        },
-        create: {
-          name: area.name,
-          description: area.description,
-          type: area.type,
-          isActive: true,
-          isDefault: true,
-          tags: ['business-area'],
-        },
-      });
-    }
+    // Seed business areas  
+    await prisma.systemCategory.createMany({
+      data: BUSINESS_AREAS.map(area => ({
+        name: area.name,
+        description: area.description,
+        type: area.type,
+        isActive: true,
+        isDefault: true,
+        organizationId: null,
+        tags: ['business-area'],
+      })),
+      skipDuplicates: true,
+    });
 
     // Seed departments
-    for (const dept of DEPARTMENTS) {
-      await prisma.systemCategory.upsert({
-        where: {
-          name_type_organizationId: {
-            name: dept.name,
-            type: dept.type,
-            organizationId: null,
-          },
-        },
-        update: {
-          description: dept.description,
-          isActive: true,
-          isDefault: true,
-        },
-        create: {
-          name: dept.name,
-          description: dept.description,
-          type: dept.type,
-          isActive: true,
-          isDefault: true,
-          tags: ['department'],
-        },
-      });
-    }
+    await prisma.systemCategory.createMany({
+      data: DEPARTMENTS.map(dept => ({
+        name: dept.name,
+        description: dept.description,
+        type: dept.type,
+        isActive: true,
+        isDefault: true,
+        organizationId: null,
+        tags: ['department'],
+      })),
+      skipDuplicates: true,
+    });
 
     // Seed impact types
-    for (const impact of IMPACT_TYPES) {
-      await prisma.systemCategory.upsert({
-        where: {
-          name_type_organizationId: {
-            name: impact.name,
-            type: impact.type,
-            organizationId: null,
-          },
-        },
-        update: {
-          description: impact.description,
-          isActive: true,
-          isDefault: true,
-        },
-        create: {
-          name: impact.name,
-          description: impact.description,
-          type: impact.type,
-          isActive: true,
-          isDefault: true,
-          tags: ['impact-type'],
-        },
-      });
-    }
+    await prisma.systemCategory.createMany({
+      data: IMPACT_TYPES.map(impact => ({
+        name: impact.name,
+        description: impact.description,
+        type: impact.type,
+        isActive: true,
+        isDefault: true,
+        organizationId: null,
+        tags: ['impact-type'],
+      })),
+      skipDuplicates: true,
+    });
 
     console.log('✅ Taxonomy data seeded successfully');
   } catch (error) {

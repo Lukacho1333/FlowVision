@@ -19,7 +19,12 @@
     "prisma:seed:comprehensive": "node prisma/seed-comprehensive-flowvision.cjs",
     "prisma:seed:feedback": "node prisma/seed-employee-feedback.cjs",
     "dev:reset": "node scripts/dev-reset.js",
-    "prepare": "husky"
+    "prepare": "husky",
+    "ai:setup": "bash scripts/ai-automation/setup-cursor-agents.sh",
+    "ai:start": "node scripts/ai-automation/run-agents.js",
+    "ai:monitor": "node .cursor/context/chat-monitor.js",
+    "quality:gates": "node scripts/quality-gates/run-all.js",
+    "sprint:update": "node scripts/ai-automation/update-sprint.js"
   },
   "keywords": [],
   "author": "",

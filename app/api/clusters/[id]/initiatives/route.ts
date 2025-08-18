@@ -234,22 +234,30 @@ Generate a detailed initiative in JSON format:
         );
 
         try {
-          // If AI response is available, try to parse it, otherwise use fallback
-          const aiData = aiResponse ? JSON.parse(aiResponse) : null;
+          // If AI response is available, parse the insights string
+          let parsedAI = null;
+          if (aiResponse?.insights) {
+            try {
+              parsedAI = JSON.parse(aiResponse.insights);
+            } catch (parseError) {
+              console.warn('Failed to parse AI insights:', parseError);
+            }
+          }
+          
           initiativeData = {
             ...initiativeData,
-            title: aiData.title || initiativeData.title,
-            problem: aiData.problem || initiativeData.problem,
-            goal: aiData.goal || initiativeData.goal,
-            kpis: aiData.kpis || [],
-            estimatedHours: aiData.estimatedTimeline ? 160 : undefined, // Default estimation
+            title: parsedAI?.title || initiativeData.title,
+            problem: parsedAI?.problem || initiativeData.problem,
+            goal: parsedAI?.goal || initiativeData.goal,
+            kpis: parsedAI?.kpis || [],
+            estimatedHours: parsedAI?.estimatedTimeline ? 160 : undefined, // Default estimation
             clusterMetrics: {
               ...initiativeData.clusterMetrics,
               aiEnhanced: true,
-              phases: aiData.phases || [],
-              successMetrics: aiData.successMetrics || [],
-              riskFactors: aiData.riskFactors || [],
-              resourceRequirements: aiData.resourceRequirements || [],
+              phases: parsedAI?.phases || [],
+              successMetrics: parsedAI?.successMetrics || [],
+              riskFactors: parsedAI?.riskFactors || [],
+              resourceRequirements: parsedAI?.resourceRequirements || [],
             },
           };
         } catch (parseError) {
