@@ -91,10 +91,15 @@ export default function AuthPage() {
         <div className="flex justify-center">
           <img src="/logo-flowvision.svg" alt="FlowVision" className="h-12 w-auto" />
         </div>
-        <h2 className="mt-6 text-center text-3xl font-bold text-gray-900">Sign in to FlowVision</h2>
+        <h2 className="mt-6 text-center text-3xl font-bold text-gray-900">Morrison Architecture & Engineering</h2>
         <p className="mt-2 text-center text-sm text-gray-600">
-          Transform friction into flow with AI-powered efficiency intelligence
+          FlowVision Demo Environment - Architecture Firm Operations Intelligence
         </p>
+        <div className="mt-4 bg-blue-50 border border-blue-200 rounded-lg p-3">
+          <p className="text-center text-xs text-blue-700 font-medium">
+            🏗️ DEMO ENVIRONMENT: Morrison AE - 75+ Employee Architecture Firm
+          </p>
+        </div>
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
