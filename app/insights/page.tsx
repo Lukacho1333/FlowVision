@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import CorrelationDashboard from '@/components/CorrelationDashboard';
 import IntelligenceDashboard from '@/components/IntelligenceDashboard';
+import SystemsAnalyticsDashboard from '@/components/SystemsAnalyticsDashboard';
 import {
   ArrowTrendingUpIcon,
   ExclamationTriangleIcon,
@@ -615,6 +616,7 @@ export default function InsightsDashboard() {
           <nav className="-mb-px flex space-x-8">
             {[
               { id: 'overview', name: 'Overview', icon: ChartBarIcon },
+              { id: 'systems', name: 'Systems Analytics', icon: CpuChipIcon },
               { id: 'insights', name: 'AI Insights', icon: LightBulbIcon },
               { id: 'correlations', name: 'Correlations', icon: ArrowPathIcon },
               { id: 'intelligence', name: 'AI Intelligence', icon: CpuChipIcon },
@@ -823,6 +825,10 @@ export default function InsightsDashboard() {
               </motion.div>
             </div>
           </div>
+        )}
+
+        {activeTab === 'systems' && (
+          <SystemsAnalyticsDashboard />
         )}
 
         {activeTab === 'insights' && (
