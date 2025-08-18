@@ -1,6 +1,3 @@
-// Prisma schema for FlowVision
-// AI-powered efficiency intelligence platform
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -11,300 +8,322 @@ datasource db {
 }
 
 model User {
-  id            String         @id @default(cuid())
-  email         String         @unique
-  passwordHash  String
-  role          Role           @default(LEADER)
-  name          String?
-  image         String?
-  emailVerified DateTime?
-  preferences   Json?
-  aiTier        String         @default("basic") // basic, premium, enterprise
-  businessProfile BusinessProfile?
-  initiatives   Initiative[]   @relation("UserInitiatives")
-  comments      Comment[]
-  ideas         Idea[]
-  votes         Vote[]
-  auditLogs     AuditLog[]
-  attachments   Attachment[]
-  assignedRequirementCards RequirementCard[] @relation("UserRequirementCards")
+  id                       String                @id @default(cuid())
+  organizationId           String
+  email                    String                @unique
+  passwordHash             String
+  role                     Role                  @default(LEADER)
+  name                     String?
+  image                    String?
+  emailVerified            DateTime?
+  preferences              Json?
+  aiTier                   String                @default("basic")
+  createdAt                DateTime              @default(now())
+  updatedAt                DateTime              @updatedAt
+  aiConfigurations         AIConfiguration[]
+  aiFeedback               AIQualityFeedback[]
+  aiUsageLogs              AIUsageLog[]
+  aiQuota                  AIUserQuota?
+  accounts                 Account[]
+  attachments              Attachment[]
+  auditLogs                AuditLog[]
+  businessProfile          BusinessProfile?
+  comments                 Comment[]
+  ideas                    Idea[]
+  initiatives              Initiative[]          @relation("UserInitiatives")
+  assignedSolutions        InitiativeSolution[]  @relation("AssignedSolutions")
+  Issue                    Issue[]
+  approvedRequirementCards RequirementCard[]     @relation("ApprovedRequirementCards")
+  assignedRequirementCards RequirementCard[]     @relation("UserRequirementCards")
+  createdRequirementCards  RequirementCard[]     @relation("CreatedRequirementCards")
+  sessions                 Session[]
+  assignedTasks            SolutionTask[]        @relation("AssignedTasks")
+  organizations            organizations         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  votes                    Vote[]
   systemConfigUpdates      SystemConfiguration[] @relation("SystemConfigUpdatedBy")
-  createdRequirementCards  RequirementCard[] @relation("CreatedRequirementCards")
-  approvedRequirementCards RequirementCard[] @relation("ApprovedRequirementCards")
-  accounts      Account[]
-  sessions      Session[]
-  aiUsageLogs   AIUsageLog[]
-  aiQuota       AIUserQuota?
-  aiConfigurations AIConfiguration[]
-  aiFeedback    AIQualityFeedback[]
-  assignedSolutions InitiativeSolution[] @relation("AssignedSolutions")
-  assignedTasks SolutionTask[] @relation("AssignedTasks")
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
-}
+  usage_logs               usage_logs[]
 
-enum Role {
-  ADMIN
-  LEADER
+  @@index([email])
+  @@index([organizationId, email])
+  @@index([organizationId, role, createdAt])
 }
 
 model BusinessProfile {
-  id       String   @id @default(cuid())
-  user     User     @relation(fields: [userId], references: [id])
-  userId   String   @unique
-  industry String
-  size     Int
-  metrics  Json
+  id             String        @id @default(cuid())
+  organizationId String
+  userId         String        @unique
+  industry       String
+  size           Int
+  metrics        Json
+  organizations  organizations @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user           User          @relation(fields: [userId], references: [id])
+
+  @@index([organizationId])
 }
 
 model Initiative {
-  id             String        @id @default(cuid())
-  title          String
-  problem        String
-  goal           String
-  kpis           String[]
-  requirements   String[]      @default([])
-  acceptanceCriteria String[]  @default([])
-  owner          User          @relation("UserInitiatives", fields: [ownerId], references: [id])
-  ownerId        String
-  timelineStart  DateTime?
-  timelineEnd    DateTime?
-  status         String
-  progress       Int           @default(0)
-  difficulty     Int?
-  roi            Int?
-  priorityScore  Int?
-  orderIndex     Int           @default(0)
-  budget         Int?
-  estimatedHours Int?
-  actualHours    Int?
-  phase          String?       @default("planning")
-  type           String?       @default("Process Improvement") // Process Improvement, Technology, Strategic, Operational, Quality, Cost Reduction
-  cluster        IssueCluster? @relation("ClusterInitiatives", fields: [clusterId], references: [id])
-  clusterId      String?
-  addressedIssues Issue[]      @relation("IssueInitiatives") // Many-to-many with issues
-  crossImpact    Json?         // Multi-departmental impact analysis
-  clusterMetrics Json?         // Cluster-specific success metrics
-  // AI Analysis Context Preservation
-  sourceCategory String?       // Category that generated this initiative (e.g., "Work Environment")
-  aiAnalysisContext Json?      // Complete AI analysis that informed this initiative
-  aiConfidence   Int?          // AI confidence score that supported this initiative
-  aiGeneratedAt  DateTime?     // When the source AI analysis was generated
-  dependencies   Initiative[]  @relation("InitiativeDependencies")
-  dependents     Initiative[]  @relation("InitiativeDependencies")
-  milestones     Milestone[]
-  assignments    ResourceAssignment[]
-  comments       Comment[]
-  ideas          Idea[]
-  votes          Vote[]
-  attachments    Attachment[]
-  requirementCards RequirementCard[]
-  solutions      InitiativeSolution[] @relation("InitiativeSolutions")
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
+  id                 String               @id @default(cuid())
+  title              String
+  problem            String
+  goal               String
+  kpis               String[]
+  requirements       String[]             @default([])
+  acceptanceCriteria String[]             @default([])
+  ownerId            String
+  timelineStart      DateTime?
+  timelineEnd        DateTime?
+  status             String
+  progress           Int                  @default(0)
+  difficulty         Int?
+  roi                Int?
+  priorityScore      Int?
+  orderIndex         Int                  @default(0)
+  budget             Int?
+  estimatedHours     Int?
+  actualHours        Int?
+  phase              String?              @default("planning")
+  type               String?              @default("Process Improvement")
+  clusterId          String?
+  crossImpact        Json?
+  clusterMetrics     Json?
+  sourceCategory     String?
+  aiAnalysisContext  Json?
+  aiConfidence       Int?
+  aiGeneratedAt      DateTime?
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+  organizationId     String?
+  attachments        Attachment[]
+  comments           Comment[]
+  ideas              Idea[]
+  cluster            IssueCluster?        @relation("ClusterInitiatives", fields: [clusterId], references: [id])
+  organizations      organizations?       @relation(fields: [organizationId], references: [id])
+  owner              User                 @relation("UserInitiatives", fields: [ownerId], references: [id])
+  solutions          InitiativeSolution[] @relation("InitiativeSolutions")
+  milestones         Milestone[]
+  requirementCards   RequirementCard[]
+  assignments        ResourceAssignment[]
+  votes              Vote[]
+  Initiative_A       Initiative[]         @relation("InitiativeDependencies")
+  Initiative_B       Initiative[]         @relation("InitiativeDependencies")
+  addressedIssues    Issue[]              @relation("IssueInitiatives")
 }
 
 model RequirementCard {
-  id            String      @id @default(cuid())
-  initiative    Initiative  @relation(fields: [initiativeId], references: [id], onDelete: Cascade)
-  initiativeId  String
-  type          String      @default("BUSINESS") // BUSINESS, FUNCTIONAL, ACCEPTANCE
-  title         String
-  description   String
-  priority      String      @default("MEDIUM") // LOW, MEDIUM, HIGH, CRITICAL
-  status        String      @default("DRAFT") // DRAFT, REVIEW, APPROVED, REJECTED
-  category      String?     // Optional grouping
-  assignedTo    User?       @relation("UserRequirementCards", fields: [assignedToId], references: [id])
-  assignedToId  String?
-  createdBy     User        @relation("CreatedRequirementCards", fields: [createdById], references: [id])
-  createdById   String
-  approvedBy    User?       @relation("ApprovedRequirementCards", fields: [approvedById], references: [id])
-  approvedById  String?
-  approvedAt    DateTime?
-  orderIndex    Int         @default(0)
-  // AI Generation Fields
-  aiGenerated   Boolean     @default(false) // Whether generated by AI
-  sourceType    String?     // 'issue', 'cluster', 'manual'
-  sourceId      String?     // ID of source issue/cluster
-  aiConfidence  Int?        // AI confidence score (0-100)
-  comments      Comment[]
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
+  id             String         @id @default(cuid())
+  initiativeId   String
+  type           String         @default("BUSINESS")
+  title          String
+  description    String
+  priority       String         @default("MEDIUM")
+  status         String         @default("DRAFT")
+  category       String?
+  assignedToId   String?
+  createdById    String
+  approvedById   String?
+  approvedAt     DateTime?
+  orderIndex     Int            @default(0)
+  aiGenerated    Boolean        @default(false)
+  sourceType     String?
+  sourceId       String?
+  aiConfidence   Int?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  organizationId String?
+  comments       Comment[]
+  approvedBy     User?          @relation("ApprovedRequirementCards", fields: [approvedById], references: [id])
+  assignedTo     User?          @relation("UserRequirementCards", fields: [assignedToId], references: [id])
+  createdBy      User           @relation("CreatedRequirementCards", fields: [createdById], references: [id])
+  initiative     Initiative     @relation(fields: [initiativeId], references: [id], onDelete: Cascade)
+  organizations  organizations? @relation(fields: [organizationId], references: [id])
 }
 
 model Team {
-  id          String              @id @default(cuid())
-  name        String
-  department  String?
-  capacity    Int                 @default(40) // hours per week
-  skills      String[]
-  assignments ResourceAssignment[]
-  createdAt   DateTime            @default(now())
-  updatedAt   DateTime            @updatedAt
+  id             String               @id @default(cuid())
+  name           String
+  department     String?
+  capacity       Int                  @default(40)
+  skills         String[]
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
+  organizationId String?
+  assignments    ResourceAssignment[]
+  organizations  organizations?       @relation(fields: [organizationId], references: [id])
 }
 
 model Milestone {
-  id           String     @id @default(cuid())
-  title        String
-  description  String?
-  dueDate      DateTime
-  status       String     @default("pending") // pending, in_progress, completed, delayed
-  initiative   Initiative @relation(fields: [initiativeId], references: [id], onDelete: Cascade)
-  initiativeId String
-  progress     Int        @default(0)
-  comments     Comment[]
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
+  id             String         @id @default(cuid())
+  title          String
+  description    String?
+  dueDate        DateTime
+  status         String         @default("pending")
+  initiativeId   String
+  progress       Int            @default(0)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  organizationId String?
+  comments       Comment[]
+  initiative     Initiative     @relation(fields: [initiativeId], references: [id], onDelete: Cascade)
+  organizations  organizations? @relation(fields: [organizationId], references: [id])
 }
 
 model ResourceAssignment {
-  id           String     @id @default(cuid())
-  initiative   Initiative @relation(fields: [initiativeId], references: [id], onDelete: Cascade)
-  initiativeId String
-  team         Team       @relation(fields: [teamId], references: [id], onDelete: Cascade)
-  teamId       String
-  hoursAllocated Int      @default(0)
-  startDate    DateTime?
-  endDate      DateTime?
-  role         String?    // "lead", "contributor", "reviewer"
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
+  id             String         @id @default(cuid())
+  initiativeId   String
+  teamId         String
+  hoursAllocated Int            @default(0)
+  startDate      DateTime?
+  endDate        DateTime?
+  role           String?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  organizationId String?
+  initiative     Initiative     @relation(fields: [initiativeId], references: [id], onDelete: Cascade)
+  organizations  organizations? @relation(fields: [organizationId], references: [id])
+  team           Team           @relation(fields: [teamId], references: [id], onDelete: Cascade)
 
   @@unique([initiativeId, teamId])
 }
 
 model Issue {
-  id            String        @id @default(cuid())
-  description   String
-  votes         Int           @default(0)
-  heatmapScore  Int           @default(0)
-  department    String?       // Added for clustering analysis
-  category      String?       // Added for clustering analysis
-  status        String        @default("OPEN") // OPEN, BEING_ADDRESSED, RESOLVED, CLOSED
-  cluster       IssueCluster? @relation(fields: [clusterId], references: [id])
-  clusterId     String?
-  similarity    Json?         // Semantic similarity scores to other issues
-  keywords      String[]      @default([]) // Extracted keywords for clustering
-  crossImpact   Json?         // Cross-departmental impact analysis
-  // AI Summary Fields
-  aiSummary     String?       // AI-generated analysis and summary
-  aiConfidence  Int?          // AI confidence score (0-100)
-  aiGeneratedAt DateTime?     // When AI summary was created
-  aiVersion     String?       // AI model version used
-  // Enhanced AI Analysis Fields
-  aiAnalysisDetails Json?     // Full detailed analysis (rootCauses, recommendations, impact, etc.)
-  
-  // AI-Driven Classification Fields (Story 2.3)
-  businessAreaId    String?        // References SystemCategory for business area
-  businessArea      SystemCategory? @relation("IssueBusinessArea", fields: [businessAreaId], references: [id])
-  departmentId      String?        // References SystemCategory for department  
-  departmentCategory SystemCategory? @relation("IssueDepartment", fields: [departmentId], references: [id])
-  impactTypeId      String?        // References SystemCategory for impact type
-  impactType        SystemCategory? @relation("IssueImpactType", fields: [impactTypeId], references: [id])
-  
-  // Smart Form Validation Fields (Story 2.2)
-  qualityScore      Int?           // Overall quality score (0-100) from form validation
-  completenessScore Int?           // Completeness score (0-100) from AI analysis
-  validationDetails Json?          // Detailed validation metrics and feedback
-  
-  // AI Category Suggestion Metadata
-  categorySuggestionId String?     // Track which AI suggestion was used
-  categoryConfidence   Int?        // Confidence score for selected categories
-  suggestionMetadata   Json?       // Store original AI suggestions for analysis
-  
-  // System Impact Relationships
-  systemImpacts IssueSystemImpact[] // System categories affected by this issue
-  comments      Comment[]
-  userVotes     Vote[]
-  initiatives   Initiative[]  @relation("IssueInitiatives") // Many-to-many with initiatives
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt @default(now())
+  id                   String              @id @default(cuid())
+  organizationId       String
+  description          String
+  authorId             String
+  votes                Int                 @default(0)
+  heatmapScore         Int                 @default(0)
+  department           String?
+  category             String?
+  status               String              @default("OPEN")
+  clusterId            String?
+  similarity           Json?
+  keywords             String[]            @default([])
+  crossImpact          Json?
+  aiSummary            String?
+  aiConfidence         Int?
+  aiGeneratedAt        DateTime?
+  aiVersion            String?
+  aiAnalysisDetails    Json?
+  businessAreaId       String?
+  departmentId         String?
+  impactTypeId         String?
+  qualityScore         Int?
+  completenessScore    Int?
+  validationDetails    Json?
+  categorySuggestionId String?
+  categoryConfidence   Int?
+  suggestionMetadata   Json?
+  createdAt            DateTime            @default(now())
+  updatedAt            DateTime            @default(now()) @updatedAt
+  comments             Comment[]
+  User                 User                @relation(fields: [authorId], references: [id])
+  businessArea         SystemCategory?     @relation("IssueBusinessArea", fields: [businessAreaId], references: [id])
+  cluster              IssueCluster?       @relation(fields: [clusterId], references: [id])
+  departmentCategory   SystemCategory?     @relation("IssueDepartment", fields: [departmentId], references: [id])
+  impactType           SystemCategory?     @relation("IssueImpactType", fields: [impactTypeId], references: [id])
+  organizations        organizations       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  systemImpacts        IssueSystemImpact[]
+  userVotes            Vote[]
+  initiatives          Initiative[]        @relation("IssueInitiatives")
+
+  @@index([organizationId, authorId])
+  @@index([organizationId, clusterId])
+  @@index([organizationId, createdAt])
+  @@index([organizationId, status, category])
+  @@index([organizationId, status, createdAt])
+  @@index([organizationId, votes, heatmapScore])
 }
 
 model IssueCluster {
-  id             String      @id @default(cuid())
-  name           String      // e.g., "Project Coordination & Communication"
-  description    String      // Detailed description of cluster theme
-  category       String      // e.g., "coordination", "technology", "process"
-  severity       String      @default("medium") // low, medium, high, critical
-  theme          String      // Brief theme description
-  keywords       String[]    @default([]) // Keywords used for clustering
-  issues         Issue[]     // Related issues in this cluster
-  initiatives    Initiative[] @relation("ClusterInitiatives") // Strategic initiatives addressing this cluster
-  rootCauses     Json?       // AI-identified root causes
-  impactAnalysis Json?       // Cross-departmental impact assessment
-  metrics        Json?       // Cluster performance metrics
-  // AI Summary Fields for Cluster
-  aiSummary      String?     // AI-generated consolidated analysis across issues
-  aiInsights     Json?       // Advanced AI insights (patterns, recommendations, etc.)
-  aiConfidence   Int?        // AI confidence score (0-100)
-  aiGeneratedAt  DateTime?   // When AI summary was created
-  aiVersion      String?     // AI model version used
-  // Enhanced AI Analysis Fields
-  aiAnalysisDetails Json?    // Full detailed analysis (consolidatedSummary, crossIssuePatterns, strategicPriority, initiativeRecommendations, etc.)
-  color          String      @default("#3B82F6") // UI color for visualization
-  isActive       Boolean     @default(true) // Whether cluster is actively used
-  createdAt      DateTime    @default(now())
-  updatedAt      DateTime    @updatedAt
+  id                String         @id @default(cuid())
+  name              String
+  description       String
+  category          String
+  severity          String         @default("medium")
+  theme             String
+  keywords          String[]       @default([])
+  rootCauses        Json?
+  impactAnalysis    Json?
+  metrics           Json?
+  aiSummary         String?
+  aiInsights        Json?
+  aiConfidence      Int?
+  aiGeneratedAt     DateTime?
+  aiVersion         String?
+  aiAnalysisDetails Json?
+  color             String         @default("#3B82F6")
+  isActive          Boolean        @default(true)
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+  organizationId    String?
+  initiatives       Initiative[]   @relation("ClusterInitiatives")
+  issues            Issue[]
+  organizations     organizations? @relation(fields: [organizationId], references: [id])
 }
 
 model Comment {
-  id           String      @id @default(cuid())
-  content      String
-  author       User        @relation(fields: [authorId], references: [id])
-  authorId     String
-  initiative   Initiative? @relation(fields: [initiativeId], references: [id], onDelete: Cascade)
-  initiativeId String?
-  issue        Issue?      @relation(fields: [issueId], references: [id], onDelete: Cascade)
-  issueId      String?
-  idea         Idea?       @relation(fields: [ideaId], references: [id], onDelete: Cascade)
-  ideaId       String?
-  milestone    Milestone?  @relation(fields: [milestoneId], references: [id], onDelete: Cascade)
-  milestoneId  String?
-  requirementCard RequirementCard? @relation(fields: [requirementCardId], references: [id], onDelete: Cascade)
+  id                String           @id @default(cuid())
+  content           String
+  authorId          String
+  initiativeId      String?
+  issueId           String?
+  ideaId            String?
+  milestoneId       String?
   requirementCardId String?
-  parentComment Comment?   @relation("CommentReplies", fields: [parentId], references: [id])
-  parentId     String?
-  replies      Comment[]   @relation("CommentReplies")
-  mentions     String[]    // User IDs mentioned in comment
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
+  parentId          String?
+  mentions          String[]
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  organizationId    String?
+  author            User             @relation(fields: [authorId], references: [id])
+  idea              Idea?            @relation(fields: [ideaId], references: [id], onDelete: Cascade)
+  initiative        Initiative?      @relation(fields: [initiativeId], references: [id], onDelete: Cascade)
+  issue             Issue?           @relation(fields: [issueId], references: [id], onDelete: Cascade)
+  milestone         Milestone?       @relation(fields: [milestoneId], references: [id], onDelete: Cascade)
+  organizations     organizations?   @relation(fields: [organizationId], references: [id])
+  parentComment     Comment?         @relation("CommentReplies", fields: [parentId], references: [id])
+  replies           Comment[]        @relation("CommentReplies")
+  requirementCard   RequirementCard? @relation(fields: [requirementCardId], references: [id], onDelete: Cascade)
 }
 
 model Idea {
-  id          String     @id @default(cuid())
-  title       String
-  description String
-  author      User       @relation(fields: [authorId], references: [id])
-  authorId    String
-  category    String     @default("general") // general, process, technology, strategy
-  priority    String     @default("medium") // low, medium, high
-  status      String     @default("idea") // idea, reviewing, approved, rejected, implemented
-  votes       Int        @default(0)
-  tags        String[]
-  assignedTo  String?    // User ID for assignment
-  dueDate     DateTime?
-  initiative  Initiative? @relation(fields: [initiativeId], references: [id])
-  initiativeId String?
-  userVotes   Vote[]
-  comments    Comment[]
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  id             String         @id @default(cuid())
+  title          String
+  description    String
+  authorId       String
+  category       String         @default("general")
+  priority       String         @default("medium")
+  status         String         @default("idea")
+  votes          Int            @default(0)
+  tags           String[]
+  assignedTo     String?
+  dueDate        DateTime?
+  initiativeId   String?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  organizationId String?
+  comments       Comment[]
+  author         User           @relation(fields: [authorId], references: [id])
+  initiative     Initiative?    @relation(fields: [initiativeId], references: [id])
+  organizations  organizations? @relation(fields: [organizationId], references: [id])
+  userVotes      Vote[]
 }
 
 model Vote {
-  id           String      @id @default(cuid())
-  user         User        @relation(fields: [userId], references: [id])
-  userId       String
-  initiative   Initiative? @relation(fields: [initiativeId], references: [id], onDelete: Cascade)
-  initiativeId String?
-  idea         Idea?       @relation(fields: [ideaId], references: [id], onDelete: Cascade)
-  ideaId       String?
-  issue        Issue?      @relation(fields: [issueId], references: [id], onDelete: Cascade)
-  issueId      String?
-  type         String      // up, down, priority
-  value        Int         @default(1)
-  createdAt    DateTime    @default(now())
+  id             String         @id @default(cuid())
+  userId         String
+  initiativeId   String?
+  ideaId         String?
+  issueId        String?
+  type           String
+  value          Int            @default(1)
+  createdAt      DateTime       @default(now())
+  organizationId String?
+  idea           Idea?          @relation(fields: [ideaId], references: [id], onDelete: Cascade)
+  initiative     Initiative?    @relation(fields: [initiativeId], references: [id], onDelete: Cascade)
+  issue          Issue?         @relation(fields: [issueId], references: [id], onDelete: Cascade)
+  organizations  organizations? @relation(fields: [organizationId], references: [id])
+  user           User           @relation(fields: [userId], references: [id])
 
   @@unique([userId, initiativeId])
   @@unique([userId, ideaId])
@@ -312,46 +331,48 @@ model Vote {
 }
 
 model AuditLog {
-  id        String   @id @default(cuid())
-  user      User?    @relation(fields: [userId], references: [id])
-  userId    String?
-  action    String
-  details   Json
-  timestamp DateTime @default(now())
+  id             String         @id @default(cuid())
+  userId         String?
+  action         String
+  details        Json
+  timestamp      DateTime       @default(now())
+  organizationId String?
+  organizations  organizations? @relation(fields: [organizationId], references: [id])
+  user           User?          @relation(fields: [userId], references: [id])
 }
 
 model Attachment {
-  id           String     @id @default(cuid())
-  filename     String
-  filepath     String
-  mimetype     String
-  size         Int
-  initiative   Initiative @relation(fields: [initiativeId], references: [id], onDelete: Cascade)
-  initiativeId String
-  uploadedBy   User       @relation(fields: [uploadedById], references: [id])
-  uploadedById String
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
+  id             String         @id @default(cuid())
+  filename       String
+  filepath       String
+  mimetype       String
+  size           Int
+  initiativeId   String
+  uploadedById   String
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  organizationId String?
+  initiative     Initiative     @relation(fields: [initiativeId], references: [id], onDelete: Cascade)
+  organizations  organizations? @relation(fields: [organizationId], references: [id])
+  uploadedBy     User           @relation(fields: [uploadedById], references: [id])
 }
 
-// NextAuth models
 model Account {
-  id                String  @id @default(cuid())
-  userId            String
-  type              String
-  provider          String
-  providerAccountId String
-  refresh_token     String?
-  access_token      String?
-  expires_at        Int?
-  token_type        String?
-  scope             String?
-  id_token          String?
-  session_state     String?
+  id                 String  @id @default(cuid())
+  userId             String
+  type               String
+  provider           String
+  providerAccountId  String
+  refresh_token      String?
+  access_token       String?
+  expires_at         Int?
+  token_type         String?
+  scope              String?
+  id_token           String?
+  session_state      String?
   oauth_token_secret String?
-  oauth_token       String?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  oauth_token        String?
+  user               User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
 }
@@ -361,8 +382,7 @@ model Session {
   sessionToken String   @unique
   userId       String
   expires      DateTime
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model VerificationToken {
@@ -373,24 +393,23 @@ model VerificationToken {
   @@unique([identifier, token])
 }
 
-// AI Optimization Models
 model AIUsageLog {
-  id           String   @id @default(cuid())
+  id           String              @id @default(cuid())
   requestId    String
   userId       String
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   operation    String
-  inputTokens  Int      @default(0)
-  outputTokens Int      @default(0)
-  totalTokens  Int      @default(0)
-  cost         Float    @default(0)
-  latency      Int      @default(0)
-  cacheHit     Boolean  @default(false)
-  modelUsed    String   @default("gpt-3.5-turbo")
-  quality      Int      @default(100)
-  timestamp    DateTime @default(now())
+  inputTokens  Int                 @default(0)
+  outputTokens Int                 @default(0)
+  totalTokens  Int                 @default(0)
+  cost         Float               @default(0)
+  latency      Int                 @default(0)
+  cacheHit     Boolean             @default(false)
+  modelUsed    String              @default("gpt-3.5-turbo")
+  quality      Int                 @default(100)
+  timestamp    DateTime            @default(now())
   metadata     Json?
   feedback     AIQualityFeedback[]
+  user         User                @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, timestamp])
   @@index([operation, timestamp])
@@ -398,36 +417,36 @@ model AIUsageLog {
 }
 
 model AIUserQuota {
-  id                 String   @id @default(cuid())
-  userId             String   @unique
-  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  tier               String   @default("basic")
-  dailyTokenLimit    Int      @default(10000)
-  monthlyTokenLimit  Int      @default(250000)
-  dailyUsedTokens    Int      @default(0)
-  monthlyUsedTokens  Int      @default(0)
-  dailyCost          Float    @default(0)
-  monthlyCost        Float    @default(0)
-  lastResetDaily     DateTime @default(now())
-  lastResetMonthly   DateTime @default(now())
-  isBlocked          Boolean  @default(false)
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
+  id                String   @id @default(cuid())
+  userId            String   @unique
+  tier              String   @default("basic")
+  dailyTokenLimit   Int      @default(10000)
+  monthlyTokenLimit Int      @default(250000)
+  dailyUsedTokens   Int      @default(0)
+  monthlyUsedTokens Int      @default(0)
+  dailyCost         Float    @default(0)
+  monthlyCost       Float    @default(0)
+  lastResetDaily    DateTime @default(now())
+  lastResetMonthly  DateTime @default(now())
+  isBlocked         Boolean  @default(false)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model AIPerformanceMetric {
-  id            String   @id @default(cuid())
-  operation     String
-  model         String
-  avgLatency    Int      @default(0)
-  avgCost       Float    @default(0)
-  avgQuality    Int      @default(100)
-  successRate   Float    @default(1.0)
-  cacheHitRate  Float    @default(0.0)
-  requestCount  Int      @default(0)
-  totalTokens   Int      @default(0)
-  date          DateTime
-  createdAt     DateTime @default(now())
+  id           String   @id @default(cuid())
+  operation    String
+  model        String
+  avgLatency   Int      @default(0)
+  avgCost      Float    @default(0)
+  avgQuality   Int      @default(100)
+  successRate  Float    @default(1.0)
+  cacheHitRate Float    @default(0.0)
+  requestCount Int      @default(0)
+  totalTokens  Int      @default(0)
+  date         DateTime
+  createdAt    DateTime @default(now())
 
   @@unique([operation, model, date])
   @@index([date])
@@ -459,282 +478,174 @@ model AIConfiguration {
   description String?
   isActive    Boolean  @default(true)
   updatedBy   String
-  updatedUser User     @relation(fields: [updatedBy], references: [id])
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  updatedUser User     @relation(fields: [updatedBy], references: [id])
 }
 
 model AIQualityFeedback {
-  id             String        @id @default(cuid())
+  id             String     @id @default(cuid())
   usageLogId     String
-  usageLog       AIUsageLog    @relation(fields: [usageLogId], references: [id], onDelete: Cascade)
   userId         String
-  user           User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  rating         Int           // 1-5 scale (validation handled in application)
+  rating         Int
   feedback       String?
   isHelpful      Boolean?
   reportedIssues String[]
-  createdAt      DateTime      @default(now())
+  createdAt      DateTime   @default(now())
+  usageLog       AIUsageLog @relation(fields: [usageLogId], references: [id], onDelete: Cascade)
+  user           User       @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
-// Solutions Framework Models
 model InitiativeSolution {
-  id               String           @id @default(cuid())
-  
-  // Relationships
-  initiative       Initiative       @relation("InitiativeSolutions", fields: [initiativeId], references: [id], onDelete: Cascade)
-  initiativeId     String
-  
-  // Solution details
-  title            String           // e.g., "Implement Project Management Training"
-  description      String           // Detailed solution approach
-  type             SolutionType     // TECHNOLOGY, PROCESS, TRAINING, POLICY
-  
-  // Planning and execution
-  priority         Int              @default(0) // Higher number = higher priority
-  status           SolutionStatus   @default(DRAFT) // DRAFT, PLANNED, IN_PROGRESS, COMPLETED, CANCELLED
-  estimatedCost    Float?           // Estimated cost in dollars
-  estimatedHours   Int?             // Estimated effort in hours
-  actualCost       Float?           // Actual cost spent
-  actualHours      Int?             // Actual hours spent
-  
-  // Timeline
-  plannedStartDate DateTime?        // When solution is planned to start
-  plannedEndDate   DateTime?        // When solution is planned to complete
-  actualStartDate  DateTime?        // When solution actually started
-  actualEndDate    DateTime?        // When solution actually completed
-  
-  // Assignment and ownership
-  assignedTo       User?            @relation("AssignedSolutions", fields: [assignedToId], references: [id])
-  assignedToId     String?
-  
-  // AI generation support
-  isAIGenerated    Boolean          @default(false) // Whether generated by AI
-  aiConfidence     Int?             // AI confidence score (0-100)
-  aiReasoning      String?          // AI explanation for solution recommendation
-  sourceType       String?          // 'cluster', 'issue', 'manual', 'ai_analysis'
-  sourceId         String?          // ID of source cluster/issue
-  
-  // Progress tracking
-  progress         Int              @default(0) // Progress percentage (0-100)
-  
-  // Validation and approval
-  isValidated      Boolean          @default(false) // Whether validated by human
-  validatedBy      String?          // User ID who validated
-  validatedAt      DateTime?        // When validation occurred
-  
-  // Dependencies and relationships
-  dependencies     InitiativeSolution[] @relation("SolutionDependencies")
-  dependents       InitiativeSolution[] @relation("SolutionDependencies")
-  
-  // Task breakdown
-  tasks            SolutionTask[]   // Related tasks for this solution
-  
-  // Metadata
-  tags             String[]         @default([]) // Additional categorization
-  notes            String?          // Additional notes or context
-  
-  createdAt        DateTime         @default(now())
-  updatedAt        DateTime         @updatedAt
-  
+  id                   String               @id @default(cuid())
+  initiativeId         String
+  title                String
+  description          String
+  type                 SolutionType
+  priority             Int                  @default(0)
+  status               SolutionStatus       @default(DRAFT)
+  estimatedCost        Float?
+  estimatedHours       Int?
+  actualCost           Float?
+  actualHours          Int?
+  plannedStartDate     DateTime?
+  plannedEndDate       DateTime?
+  actualStartDate      DateTime?
+  actualEndDate        DateTime?
+  assignedToId         String?
+  isAIGenerated        Boolean              @default(false)
+  aiConfidence         Int?
+  aiReasoning          String?
+  sourceType           String?
+  sourceId             String?
+  progress             Int                  @default(0)
+  isValidated          Boolean              @default(false)
+  validatedBy          String?
+  validatedAt          DateTime?
+  tags                 String[]             @default([])
+  notes                String?
+  createdAt            DateTime             @default(now())
+  updatedAt            DateTime             @updatedAt
+  organizationId       String?
+  assignedTo           User?                @relation("AssignedSolutions", fields: [assignedToId], references: [id])
+  initiative           Initiative           @relation("InitiativeSolutions", fields: [initiativeId], references: [id], onDelete: Cascade)
+  organizations        organizations?       @relation(fields: [organizationId], references: [id])
+  tasks                SolutionTask[]
+  InitiativeSolution_A InitiativeSolution[] @relation("SolutionDependencies")
+  InitiativeSolution_B InitiativeSolution[] @relation("SolutionDependencies")
+
   @@index([initiativeId, status])
   @@index([assignedToId])
   @@index([type, status])
   @@index([priority])
 }
 
-enum SolutionType {
-  TECHNOLOGY  // Software implementation, system upgrades, tool adoption
-  PROCESS     // Workflow changes, procedure updates, process optimization
-  TRAINING    // Skills development, education programs, certification
-  POLICY      // Rule changes, governance updates, compliance modifications
-}
-
-enum SolutionStatus {
-  DRAFT        // Solution is being defined
-  PLANNED      // Solution is approved and scheduled
-  IN_PROGRESS  // Solution implementation is underway
-  COMPLETED    // Solution has been successfully implemented
-  CANCELLED    // Solution was cancelled or abandoned
-}
-
 model SolutionTask {
-  id               String           @id @default(cuid())
-  
-  // Relationships
-  solution         InitiativeSolution @relation(fields: [solutionId], references: [id], onDelete: Cascade)
-  solutionId       String
-  
-  // Task details
-  title            String           // e.g., "Configure Deltek user permissions"
-  description      String?          // Detailed task description
-  
-  // Assignment and ownership
-  assignedTo       User?            @relation("AssignedTasks", fields: [assignedToId], references: [id])
-  assignedToId     String?
-  
-  // Planning and execution
-  status           TaskStatus       @default(TODO) // TODO, IN_PROGRESS, COMPLETED, CANCELLED
-  priority         Int              @default(0) // Higher number = higher priority
-  estimatedHours   Int?             // Estimated effort in hours
-  actualHours      Int?             // Actual hours spent
-  
-  // Timeline
-  dueDate          DateTime?        // When task should be completed
-  completedAt      DateTime?        // When task was actually completed
-  
-  // Dependencies
-  dependsOn        SolutionTask[]   @relation("TaskDependencies")
-  blockedBy        SolutionTask[]   @relation("TaskDependencies")
-  
-  // AI generation support
-  isAIGenerated    Boolean          @default(false) // Whether generated by AI
-  aiConfidence     Int?             // AI confidence score (0-100)
-  aiReasoning      String?          // AI explanation for task recommendation
-  
-  // Progress tracking
-  progress         Int              @default(0) // Progress percentage (0-100)
-  
-  // Metadata
-  tags             String[]         @default([]) // Additional categorization
-  notes            String?          // Additional notes or context
-  
-  createdAt        DateTime         @default(now())
-  updatedAt        DateTime         @updatedAt
-  
+  id             String             @id @default(cuid())
+  solutionId     String
+  title          String
+  description    String?
+  assignedToId   String?
+  status         TaskStatus         @default(TODO)
+  priority       Int                @default(0)
+  estimatedHours Int?
+  actualHours    Int?
+  dueDate        DateTime?
+  completedAt    DateTime?
+  isAIGenerated  Boolean            @default(false)
+  aiConfidence   Int?
+  aiReasoning    String?
+  progress       Int                @default(0)
+  tags           String[]           @default([])
+  notes          String?
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+  organizationId String?
+  assignedTo     User?              @relation("AssignedTasks", fields: [assignedToId], references: [id])
+  organizations  organizations?     @relation(fields: [organizationId], references: [id])
+  solution       InitiativeSolution @relation(fields: [solutionId], references: [id], onDelete: Cascade)
+  SolutionTask_A SolutionTask[]     @relation("TaskDependencies")
+  SolutionTask_B SolutionTask[]     @relation("TaskDependencies")
+
   @@index([solutionId, status])
   @@index([assignedToId])
   @@index([status, dueDate])
   @@index([priority])
 }
 
-enum TaskStatus {
-  TODO          // Task is ready to be started
-  IN_PROGRESS   // Task is currently being worked on
-  COMPLETED     // Task has been finished
-  CANCELLED     // Task was cancelled or is no longer needed
-}
-
 model IssueSystemImpact {
-  id                String           @id @default(cuid())
-  
-  // Relationships
-  issue             Issue            @relation(fields: [issueId], references: [id], onDelete: Cascade)
-  issueId           String
-  systemCategory    SystemCategory   @relation(fields: [systemCategoryId], references: [id], onDelete: Cascade)
-  systemCategoryId  String
-  
-  // Impact details
-  impactLevel       ImpactLevel      // LOW, MEDIUM, HIGH, CRITICAL
-  description       String?          // Optional description of specific impact
-  
-  // AI-generated insights
-  isAIGenerated     Boolean          @default(false) // Whether this impact was identified by AI
-  aiConfidence      Int?             // AI confidence score (0-100)
-  aiReasoning       String?          // AI explanation for why this impact was identified
-  
-  // Validation
-  isValidated       Boolean          @default(false) // Whether human has validated this impact
-  validatedBy       String?          // User ID who validated
-  validatedAt       DateTime?        // When validation occurred
-  
-  // Metadata
-  priority          Int              @default(0) // For ordering impacts within an issue
-  
-  createdAt         DateTime         @default(now())
-  updatedAt         DateTime         @updatedAt
-  
-  @@unique([issueId, systemCategoryId]) // Prevent duplicate impacts for same issue/system
+  id               String         @id @default(cuid())
+  issueId          String
+  systemCategoryId String
+  impactLevel      ImpactLevel
+  description      String?
+  isAIGenerated    Boolean        @default(false)
+  aiConfidence     Int?
+  aiReasoning      String?
+  isValidated      Boolean        @default(false)
+  validatedBy      String?
+  validatedAt      DateTime?
+  priority         Int            @default(0)
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  issue            Issue          @relation(fields: [issueId], references: [id], onDelete: Cascade)
+  systemCategory   SystemCategory @relation(fields: [systemCategoryId], references: [id], onDelete: Cascade)
+
+  @@unique([issueId, systemCategoryId])
   @@index([impactLevel])
   @@index([isAIGenerated])
   @@index([isValidated])
 }
 
-enum ImpactLevel {
-  LOW       // Minor impact, workaround available
-  MEDIUM    // Moderate impact, affects efficiency
-  HIGH      // Significant impact, affects productivity
-  CRITICAL  // Severe impact, blocks operations
-}
-
 model SystemCategory {
-  id               String           @id @default(cuid())
-  name             String           // e.g., "Deltek", "Project Management", "Leadership Team"
-  description      String?          // Detailed description of the system/process/role
-  type             SystemType       // TECHNOLOGY, PROCESS, PEOPLE
-  industry         String?          // Industry context (e.g., "architecture", "engineering")
-  isDefault        Boolean          @default(false) // Whether this is a default/template category
-  isActive         Boolean          @default(true)  // Whether category is currently in use
-  
-  // Hierarchical structure
-  parentId         String?          // Self-referencing for hierarchy
-  parent           SystemCategory?  @relation("SystemHierarchy", fields: [parentId], references: [id])
-  children         SystemCategory[] @relation("SystemHierarchy")
-  
-  // Organization context
-  organizationId   String?          // Future: multi-tenant support
-  
-  // Metadata
-  tags             String[]         @default([]) // Additional tagging for flexibility
-  iconUrl          String?          // Optional icon for UI representation
-  color            String?          // Color coding for UI visualization
-  
-  // Usage tracking
-  usageCount       Int              @default(0) // How many issues/initiatives use this category
-  
-  // Relationships
-  issueImpacts     IssueSystemImpact[]
-  
-  // AI Classification Relationships (Story 2.3)
-  issueBusinessAreas   Issue[] @relation("IssueBusinessArea")    // Issues classified with this business area
-  issueDepartments     Issue[] @relation("IssueDepartment")      // Issues classified with this department  
-  issueImpactTypes     Issue[] @relation("IssueImpactType")      // Issues classified with this impact type
-  
-  createdAt        DateTime         @default(now())
-  updatedAt        DateTime         @updatedAt
-  
+  id                 String              @id @default(cuid())
+  name               String
+  description        String?
+  type               SystemType
+  industry           String?
+  isDefault          Boolean             @default(false)
+  isActive           Boolean             @default(true)
+  parentId           String?
+  organizationId     String?
+  tags               String[]            @default([])
+  iconUrl            String?
+  color              String?
+  usageCount         Int                 @default(0)
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  issueBusinessAreas Issue[]             @relation("IssueBusinessArea")
+  issueDepartments   Issue[]             @relation("IssueDepartment")
+  issueImpactTypes   Issue[]             @relation("IssueImpactType")
+  issueImpacts       IssueSystemImpact[]
+  organizations      organizations?      @relation(fields: [organizationId], references: [id])
+  parent             SystemCategory?     @relation("SystemHierarchy", fields: [parentId], references: [id])
+  children           SystemCategory[]    @relation("SystemHierarchy")
+
+  @@unique([name, type, organizationId])
   @@index([type, isActive])
   @@index([parentId])
   @@index([organizationId])
-  @@unique([name, type, organizationId]) // Prevent duplicates within org/type
 }
 
-// System Configuration Management
-// Centralized storage for all configurable business rules and system settings
 model SystemConfiguration {
   id          String   @id @default(cuid())
-  
-  // Configuration Identification
-  category    String   // e.g., "scoring", "ai", "performance", "ux"
-  key         String   // e.g., "issue_thresholds", "validation_scores", "ai_fallback_model"
-  
-  // Configuration Value and Metadata
-  value       Json     // The actual configuration value (supports any JSON structure)
-  dataType    String   // "string", "number", "boolean", "json", "array" for validation
-  description String?  // Human-readable description of what this config controls
-  
-  // Environment and Context
-  environment String   @default("production") // "development", "staging", "production", "all"
-  scope       String   @default("global")     // "global", "user", "organization"
-  
-  // Configuration Management
-  isActive    Boolean  @default(true)         // Enable/disable configuration
-  version     Int      @default(1)            // Configuration versioning for rollback
-  tags        String[] @default([])           // Tags for grouping and filtering
-  
-  // Validation and Constraints
-  validation  Json?    // JSON schema or validation rules for the value
-  constraints Json?    // Business constraints (e.g., min/max values, dependencies)
-  
-  // Audit and Tracking
-  updatedBy   String?  // User ID who last updated this configuration
+  category    String
+  key         String
+  value       Json
+  dataType    String
+  description String?
+  environment String   @default("production")
+  scope       String   @default("global")
+  isActive    Boolean  @default(true)
+  version     Int      @default(1)
+  tags        String[] @default([])
+  validation  Json?
+  constraints Json?
+  updatedBy   String?
   updatedAt   DateTime @updatedAt
   createdAt   DateTime @default(now())
-  
-  // Relationships
   updatedUser User?    @relation("SystemConfigUpdatedBy", fields: [updatedBy], references: [id])
-  
-  // Ensure unique configurations per category/key/environment
+
   @@unique([category, key, environment, scope])
   @@index([category, isActive])
   @@index([environment, scope])
@@ -742,8 +653,100 @@ model SystemConfiguration {
   @@map("system_configurations")
 }
 
+model organizations {
+  id                 String               @id
+  name               String
+  slug               String               @unique
+  domain             String?              @unique
+  planTier           PlanTier             @default(PROFESSIONAL)
+  settings           Json                 @default("{}")
+  isActive           Boolean              @default(true)
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime
+  Attachment         Attachment[]
+  AuditLog           AuditLog[]
+  BusinessProfile    BusinessProfile[]
+  Comment            Comment[]
+  Idea               Idea[]
+  Initiative         Initiative[]
+  InitiativeSolution InitiativeSolution[]
+  Issue              Issue[]
+  IssueCluster       IssueCluster[]
+  Milestone          Milestone[]
+  RequirementCard    RequirementCard[]
+  ResourceAssignment ResourceAssignment[]
+  SolutionTask       SolutionTask[]
+  SystemCategory     SystemCategory[]
+  Team               Team[]
+  User               User[]
+  Vote               Vote[]
+  usage_logs         usage_logs[]
+
+  @@index([planTier, isActive])
+  @@index([slug])
+}
+
+model usage_logs {
+  id             String        @id
+  organizationId String
+  userId         String?
+  endpoint       String
+  method         String
+  requestSize    Int           @default(0)
+  responseSize   Int           @default(0)
+  duration       Int           @default(0)
+  timestamp      DateTime      @default(now())
+  organizations  organizations @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  User           User?         @relation(fields: [userId], references: [id])
+
+  @@index([endpoint, timestamp])
+  @@index([organizationId, timestamp])
+}
+
+enum Role {
+  ADMIN
+  LEADER
+  VIEWER
+}
+
+enum SolutionType {
+  TECHNOLOGY
+  PROCESS
+  TRAINING
+  POLICY
+}
+
+enum SolutionStatus {
+  DRAFT
+  PLANNED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum ImpactLevel {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
 enum SystemType {
-  TECHNOLOGY  // Software, tools, platforms (e.g., Deltek, Revit, Office 365)
-  PROCESS     // Business processes, workflows (e.g., Design Review, Project Closeout)
-  PEOPLE      // Roles, teams, stakeholders (e.g., Project Manager, Client, Leadership)
+  TECHNOLOGY
+  PROCESS
+  PEOPLE
+}
+
+enum PlanTier {
+  STARTER
+  PROFESSIONAL
+  ENTERPRISE
+  CUSTOM
 }

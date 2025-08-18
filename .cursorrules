@@ -114,6 +114,10 @@ If you encounter:
 - **ALWAYS sanitize user input** before database operations
 - **ALWAYS use environment variables** for secrets
 - **NEVER commit API keys or passwords**
+- **ALWAYS enforce tenant isolation** with organizationId filtering in multi-tenant APIs
+- **NEVER bypass organizationId filtering** regardless of user role or admin status
+- **ALWAYS validate organizationId exists** on records before API operations
+- **ALWAYS test multi-tenant scenarios** during API development
 
 ## Tool Integration
 
@@ -208,6 +212,9 @@ Remember these key project facts:
 - **ALWAYS validate request payloads** using Zod or similar
 - **ALWAYS include response type definitions** in TypeScript
 - **ALWAYS test API endpoints** with both valid and invalid data
+- **ALWAYS implement tenant isolation** for multi-tenant APIs using organizationId
+- **ALWAYS validate organizationId matching** between user and accessed resources
+- **ALWAYS test cross-tenant access prevention** in API routes
 
 ### Sprint Progress Tracking
 - **BEFORE starting** a story: Update status to "IN PROGRESS" in execution plan

@@ -14,9 +14,13 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
   const includeParam = searchParams.get('include');
   const includes = includeParam ? includeParam.split(',') : [];
 
-  // Admin users can access all initiatives, others only their own
-  const whereClause =
-    user.role === 'ADMIN' ? { id: params.id } : { id: params.id, ownerId: user.id };
+  // SECURITY FIX: Always filter by organizationId for tenant isolation  
+  // Admin users can access all initiatives in their organization, others only their own
+  const whereClause = {
+    id: params.id,
+    organizationId: user.organizationId, // CRITICAL: Always filter by organization
+    ...(user.role === 'ADMIN' ? {} : { ownerId: user.id }) // Admin sees all in their org
+  };
 
   // Build include object based on requested includes
   const includeClause: any = {

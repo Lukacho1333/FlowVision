@@ -10,8 +10,12 @@ export async function GET(request: NextRequest) {
   const user = await prisma.user.findUnique({ where: { email: session.user.email } });
   if (!user) return NextResponse.json([], { status: 200 });
 
-  // Admin users can see all initiatives, others see only their own
-  const whereClause = user.role === 'ADMIN' ? {} : { ownerId: user.id };
+  // SECURITY FIX: Always filter by organizationId for tenant isolation
+  // Admin users can see all initiatives in their organization, others see only their own
+  const whereClause = {
+    organizationId: user.organizationId, // CRITICAL: Always filter by organization
+    ...(user.role === 'ADMIN' ? {} : { ownerId: user.id }) // Admin sees all in their org
+  };
 
   // Parse include parameter from query string
   const { searchParams } = new URL(request.url);
