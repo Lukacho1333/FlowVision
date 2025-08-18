@@ -1,0 +1,255 @@
+// Super Admin Database Schema
+// SECURITY: Completely isolated from client databases
+// This schema is for FlowVision administrative staff only
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../lib/generated/super-admin-client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("SUPER_ADMIN_DATABASE_URL")
+}
+
+// Super Admin Users - FlowVision Staff Only
+model SuperAdminUser {
+  id                String               @id @default(cuid())
+  email             String               @unique
+  passwordHash      String
+  role              SuperAdminRole       @default(ADMIN)
+  name              String
+  department        String?
+  isActive          Boolean              @default(true)
+  mfaEnabled        Boolean              @default(false)
+  mfaSecret         String?              // TOTP secret
+  lastLogin         DateTime?
+  loginAttempts     Int                  @default(0)
+  lockedUntil       DateTime?
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @updatedAt
+  
+  // Relationships
+  sessions          SuperAdminSession[]
+  auditLogs         SuperAdminAuditLog[]
+  clientActions     ClientOrganizationAction[]
+  
+  @@index([email])
+  @@index([isActive, email])
+  @@map("super_admin_users")
+}
+
+// Super Admin Sessions with Enhanced Security
+model SuperAdminSession {
+  id                String            @id @default(cuid())
+  userId            String
+  sessionToken      String            @unique
+  ipAddress         String
+  userAgent         String?
+  isActive          Boolean           @default(true)
+  expiresAt         DateTime
+  lastActivity      DateTime          @default(now())
+  mfaVerified       Boolean           @default(false)
+  createdAt         DateTime          @default(now())
+  
+  // Relationships
+  user              SuperAdminUser    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([sessionToken])
+  @@index([userId, isActive])
+  @@index([expiresAt])
+  @@map("super_admin_sessions")
+}
+
+// Client Organizations Management
+model ClientOrganization {
+  id                String                      @id
+  name              String
+  slug              String                      @unique
+  domain            String?                     @unique
+  customDomain      String?                     @unique
+  planTier          PlanTier                    @default(PROFESSIONAL)
+  isActive          Boolean                     @default(true)
+  isSuspended       Boolean                     @default(false)
+  suspensionReason  String?
+  billingEmail      String
+  technicalContact  String?
+  
+  // Usage and Limits
+  userLimit         Int                         @default(50)
+  currentUsers      Int                         @default(0)
+  storageLimit      BigInt                      @default(10737418240) // 10GB in bytes
+  currentStorage    BigInt                      @default(0)
+  
+  // AI Configuration
+  aiProvider        AIProvider                  @default(FLOWVISION_MANAGED)
+  aiQuotaMonthly    Int                         @default(100000) // tokens
+  aiUsageCurrentMonth Int                       @default(0)
+  aiCostCurrentMonth  Decimal                   @default(0.00) @db.Decimal(10, 2)
+  
+  // Timestamps
+  createdAt         DateTime                    @default(now())
+  updatedAt         DateTime                    @updatedAt
+  lastActivity      DateTime?
+  
+  // Relationships
+  actions           ClientOrganizationAction[]
+  usageReports      ClientUsageReport[]
+  aiConfigurations  ClientAIConfiguration[]
+  
+  @@index([slug])
+  @@index([isActive, isSuspended])
+  @@index([planTier])
+  @@map("client_organizations")
+}
+
+// Client Organization Actions (Admin Actions on Clients)
+model ClientOrganizationAction {
+  id                String              @id @default(cuid())
+  organizationId    String
+  adminUserId       String
+  action            ClientActionType
+  details           Json
+  ipAddress         String
+  userAgent         String?
+  timestamp         DateTime            @default(now())
+  
+  // Relationships
+  organization      ClientOrganization  @relation(fields: [organizationId], references: [id])
+  adminUser         SuperAdminUser      @relation(fields: [adminUserId], references: [id])
+  
+  @@index([organizationId, timestamp])
+  @@index([adminUserId, timestamp])
+  @@index([action, timestamp])
+  @@map("client_organization_actions")
+}
+
+// Client Usage Reporting for Billing and Monitoring
+model ClientUsageReport {
+  id                String              @id @default(cuid())
+  organizationId    String
+  reportMonth       String              // YYYY-MM format
+  
+  // User Metrics
+  activeUsers       Int                 @default(0)
+  totalLogins       Int                 @default(0)
+  
+  // Content Metrics
+  issuesCreated     Int                 @default(0)
+  initiativesCreated Int                @default(0)
+  
+  // AI Usage Metrics
+  aiRequestsTotal   Int                 @default(0)
+  aiTokensUsed      Int                 @default(0)
+  aiCostTotal       Decimal             @default(0.00) @db.Decimal(10, 2)
+  
+  // Storage Metrics
+  storageUsed       BigInt              @default(0)
+  attachmentsCount  Int                 @default(0)
+  
+  // Timestamps
+  generatedAt       DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  
+  // Relationships
+  organization      ClientOrganization  @relation(fields: [organizationId], references: [id])
+  
+  @@unique([organizationId, reportMonth])
+  @@index([reportMonth])
+  @@map("client_usage_reports")
+}
+
+// Client AI Configuration Management
+model ClientAIConfiguration {
+  id                String              @id @default(cuid())
+  organizationId    String
+  provider          AIProvider
+  
+  // Client-Managed Configuration
+  clientApiKey      String?             // Encrypted
+  
+  // FlowVision-Managed Configuration
+  model             String              @default("gpt-3.5-turbo")
+  maxTokens         Int                 @default(500)
+  temperature       Decimal             @default(0.7) @db.Decimal(3, 2)
+  
+  // Quotas and Limits
+  monthlyQuota      Int                 @default(100000)
+  dailyQuota        Int                 @default(5000)
+  currentUsage      Int                 @default(0)
+  
+  // Cost Controls
+  maxMonthlyCost    Decimal             @default(50.00) @db.Decimal(10, 2)
+  currentMonthlyCost Decimal            @default(0.00) @db.Decimal(10, 2)
+  
+  // Status
+  isActive          Boolean             @default(true)
+  lastUsed          DateTime?
+  
+  // Timestamps
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  
+  // Relationships
+  organization      ClientOrganization  @relation(fields: [organizationId], references: [id])
+  
+  @@unique([organizationId])
+  @@index([provider])
+  @@map("client_ai_configurations")
+}
+
+// Super Admin Audit Logging
+model SuperAdminAuditLog {
+  id                String              @id @default(cuid())
+  userId            String
+  action            String
+  resource          String?             // e.g., "client_organization", "user"
+  resourceId        String?             // ID of the affected resource
+  details           Json
+  ipAddress         String
+  userAgent         String?
+  timestamp         DateTime            @default(now())
+  
+  // Relationships
+  user              SuperAdminUser      @relation(fields: [userId], references: [id])
+  
+  @@index([userId, timestamp])
+  @@index([action, timestamp])
+  @@index([resource, resourceId])
+  @@map("super_admin_audit_logs")
+}
+
+// Enums
+enum SuperAdminRole {
+  SUPER_ADMIN      // Full access to all FlowVision operations
+  ADMIN            // Standard admin access
+  SUPPORT          // Read-only access for customer support
+  BILLING          // Billing and usage management access
+}
+
+enum PlanTier {
+  STARTER          // Up to 10 users
+  PROFESSIONAL     // Up to 50 users
+  ENTERPRISE       // Up to 200 users
+  CUSTOM           // Custom pricing and limits
+}
+
+enum AIProvider {
+  CLIENT_MANAGED     // Client provides their own OpenAI API key
+  FLOWVISION_MANAGED // FlowVision provides AI with usage-based billing
+  HYBRID            // FlowVision manages but bills separately
+}
+
+enum ClientActionType {
+  ORGANIZATION_CREATED
+  ORGANIZATION_SUSPENDED
+  ORGANIZATION_REACTIVATED
+  ORGANIZATION_DELETED
+  PLAN_CHANGED
+  DOMAIN_ASSIGNED
+  AI_CONFIG_UPDATED
+  QUOTA_MODIFIED
+  EMERGENCY_ACCESS
+  DATA_EXPORT
+  COMPLIANCE_AUDIT
+}
