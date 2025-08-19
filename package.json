@@ -32,7 +32,9 @@
     "pre-commit-check": "./scripts/validate-repository-health.sh",
     "validate": "npx tsc --noEmit && npm run lint && npm test && npm run build",
     "dev-setup": "npm run env-check && npm run ai-health",
-    "full-health": "npm run health-check && npm run ai-health"
+    "full-health": "npm run health-check && npm run ai-health",
+    "ensure-compliance": "./scripts/ensure-compliance.sh",
+    "validate-rules": "./scripts/ensure-compliance.sh"
   },
   "keywords": [],
   "author": "",
