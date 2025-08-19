@@ -1,7 +1,12 @@
 import { renderHook, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useSession } from 'next-auth/react';
-import { useIssues, useCreateIssue, useUpdateIssue, useDeleteIssue } from '../../lib/react-query/hooks/useIssues';
+import {
+  useIssues,
+  useCreateIssue,
+  useUpdateIssue,
+  useDeleteIssue,
+} from '../../lib/react-query/hooks/useIssues';
 
 // Mock Next.js auth
 jest.mock('next-auth/react');
@@ -21,11 +26,9 @@ const createWrapper = () => {
       },
     },
   });
-  
+
   return ({ children }: { children: React.ReactNode }) => (
-    <QueryClientProvider client={queryClient}>
-      {children}
-    </QueryClientProvider>
+    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
   );
 };
 
@@ -35,7 +38,7 @@ describe('useIssues Hook', () => {
       data: { user: { email: 'test@example.com' } },
       status: 'authenticated',
     });
-    
+
     mockFetch.mockClear();
   });
 
@@ -92,7 +95,7 @@ describe('useIssues Hook', () => {
 
     it('respects filter parameters', async () => {
       const filters = { department: 'Engineering', status: 'OPEN' };
-      
+
       mockFetch.mockResolvedValueOnce({
         ok: true,
         json: () => Promise.resolve([]),
@@ -103,9 +106,7 @@ describe('useIssues Hook', () => {
       });
 
       await waitFor(() => {
-        expect(mockFetch).toHaveBeenCalledWith(
-          '/api/issues?department=Engineering&status=OPEN'
-        );
+        expect(mockFetch).toHaveBeenCalledWith('/api/issues?department=Engineering&status=OPEN');
       });
     });
 
