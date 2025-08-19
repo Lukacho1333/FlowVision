@@ -28,14 +28,284 @@ export interface RecommendationContext {
   organizationPatterns: any;
 }
 
+/**
+ * Client-Specific AI Model
+ * Maintains isolated AI learning for each organization
+ */
+class ClientAIModel {
+  private organizationId: string;
+  private learningData: {
+    acceptedRecommendations: Map<string, number>;
+    rejectedRecommendations: Map<string, number>;
+    successPatterns: Map<string, any>;
+    terminologyMap: Map<string, string[]>;
+    userPreferences: Map<string, any>;
+  };
+  private modelVersion: string;
+  private lastTraining: Date;
+
+  constructor(organizationId: string) {
+    this.organizationId = organizationId;
+    this.learningData = {
+      acceptedRecommendations: new Map(),
+      rejectedRecommendations: new Map(),
+      successPatterns: new Map(),
+      terminologyMap: new Map(),
+      userPreferences: new Map()
+    };
+    this.modelVersion = '1.0.0';
+    this.lastTraining = new Date();
+  }
+
+  /**
+   * Initialize client model from stored data
+   */
+  async initialize(): Promise<void> {
+    try {
+      // Load existing model data from database
+      const storedModel = await prisma.aIClientModel.findUnique({
+        where: { organizationId: this.organizationId }
+      });
+
+      if (storedModel) {
+        this.modelVersion = storedModel.version;
+        this.lastTraining = storedModel.lastTraining;
+        
+        // Parse stored learning data
+        const parsedData = storedModel.learningData as any;
+        if (parsedData) {
+          this.learningData = {
+            acceptedRecommendations: new Map(parsedData.acceptedRecommendations || []),
+            rejectedRecommendations: new Map(parsedData.rejectedRecommendations || []),
+            successPatterns: new Map(parsedData.successPatterns || []),
+            terminologyMap: new Map(parsedData.terminologyMap || []),
+            userPreferences: new Map(parsedData.userPreferences || [])
+          };
+        }
+      } else {
+        // Create new model entry
+        await this.saveModel();
+      }
+
+      // Check if model needs retraining (weekly)
+      const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+      if (this.lastTraining < weekAgo) {
+        await this.retrainModel();
+      }
+    } catch (error) {
+      console.error(`Failed to initialize client model for ${this.organizationId}:`, error);
+      // Continue with default model
+    }
+  }
+
+  /**
+   * Learn from user feedback
+   */
+  async learnFromFeedback(
+    recommendationType: string,
+    recommendationData: any,
+    accepted: boolean,
+    userId: string
+  ): Promise<void> {
+    const key = `${recommendationType}_${JSON.stringify(recommendationData)}`;
+    
+    if (accepted) {
+      const currentCount = this.learningData.acceptedRecommendations.get(key) || 0;
+      this.learningData.acceptedRecommendations.set(key, currentCount + 1);
+      
+      // Learn success patterns
+      await this.updateSuccessPatterns(recommendationType, recommendationData);
+      
+      // Update user preferences
+      await this.updateUserPreferences(userId, recommendationType, recommendationData);
+    } else {
+      const currentCount = this.learningData.rejectedRecommendations.get(key) || 0;
+      this.learningData.rejectedRecommendations.set(key, currentCount + 1);
+    }
+
+    // Save updated model
+    await this.saveModel();
+  }
+
+  /**
+   * Calculate recommendation confidence based on client-specific learning
+   */
+  calculateClientSpecificConfidence(
+    baseConfidence: number,
+    recommendationType: string,
+    recommendationData: any
+  ): number {
+    const key = `${recommendationType}_${JSON.stringify(recommendationData)}`;
+    
+    const accepted = this.learningData.acceptedRecommendations.get(key) || 0;
+    const rejected = this.learningData.rejectedRecommendations.get(key) || 0;
+    const total = accepted + rejected;
+
+    if (total === 0) {
+      // No historical data, use base confidence
+      return baseConfidence;
+    }
+
+    // Calculate client-specific success rate
+    const clientSuccessRate = accepted / total;
+    
+    // Weighted average with base confidence
+    const weight = Math.min(total / 10, 0.8); // Max 80% weight to client data
+    return (baseConfidence * (1 - weight)) + (clientSuccessRate * 100 * weight);
+  }
+
+  /**
+   * Get client-specific terminology adjustments
+   */
+  getClientTerminology(term: string): string[] {
+    return this.learningData.terminologyMap.get(term.toLowerCase()) || [term];
+  }
+
+  /**
+   * Get user-specific preferences
+   */
+  getUserPreferences(userId: string): any {
+    return this.learningData.userPreferences.get(userId) || {};
+  }
+
+  /**
+   * Update success patterns from accepted recommendations
+   */
+  private async updateSuccessPatterns(
+    recommendationType: string,
+    recommendationData: any
+  ): Promise<void> {
+    const pattern = {
+      type: recommendationType,
+      data: recommendationData,
+      timestamp: new Date(),
+      count: (this.learningData.successPatterns.get(recommendationType)?.count || 0) + 1
+    };
+    
+    this.learningData.successPatterns.set(recommendationType, pattern);
+  }
+
+  /**
+   * Update user preferences
+   */
+  private async updateUserPreferences(
+    userId: string,
+    recommendationType: string,
+    recommendationData: any
+  ): Promise<void> {
+    const currentPrefs = this.learningData.userPreferences.get(userId) || {
+      preferredTypes: new Map(),
+      lastActivity: new Date()
+    };
+
+    const typeCount = currentPrefs.preferredTypes.get(recommendationType) || 0;
+    currentPrefs.preferredTypes.set(recommendationType, typeCount + 1);
+    currentPrefs.lastActivity = new Date();
+
+    this.learningData.userPreferences.set(userId, currentPrefs);
+  }
+
+  /**
+   * Retrain model with recent data
+   */
+  private async retrainModel(): Promise<void> {
+    try {
+      // Get recent feedback data for this organization
+      const recentFeedback = await prisma.aIRecommendationFeedback.findMany({
+        where: {
+          organizationId: this.organizationId,
+          timestamp: {
+            gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) // Last 30 days
+          }
+        },
+        orderBy: { timestamp: 'desc' }
+      });
+
+      // Analyze patterns and update model
+      for (const feedback of recentFeedback) {
+        // This would integrate with ML pipeline for more sophisticated learning
+        // For now, we update our simple pattern tracking
+      }
+
+      this.lastTraining = new Date();
+      this.modelVersion = `${parseFloat(this.modelVersion) + 0.1}`.substring(0, 5);
+      
+      await this.saveModel();
+
+      // Log retraining event
+      await prisma.auditLog.create({
+        data: {
+          userId: 'system',
+          organizationId: this.organizationId,
+          action: 'AI_MODEL_RETRAINED',
+          details: {
+            modelVersion: this.modelVersion,
+            trainingDate: this.lastTraining,
+            feedbackCount: recentFeedback.length
+          }
+        }
+      });
+    } catch (error) {
+      console.error(`Failed to retrain model for ${this.organizationId}:`, error);
+    }
+  }
+
+  /**
+   * Save model data to database
+   */
+  private async saveModel(): Promise<void> {
+    try {
+      const learningDataSerialized = {
+        acceptedRecommendations: Array.from(this.learningData.acceptedRecommendations.entries()),
+        rejectedRecommendations: Array.from(this.learningData.rejectedRecommendations.entries()),
+        successPatterns: Array.from(this.learningData.successPatterns.entries()),
+        terminologyMap: Array.from(this.learningData.terminologyMap.entries()),
+        userPreferences: Array.from(this.learningData.userPreferences.entries())
+      };
+
+      await prisma.aIClientModel.upsert({
+        where: { organizationId: this.organizationId },
+        create: {
+          organizationId: this.organizationId,
+          version: this.modelVersion,
+          learningData: learningDataSerialized as any,
+          lastTraining: this.lastTraining,
+          createdAt: new Date()
+        },
+        update: {
+          version: this.modelVersion,
+          learningData: learningDataSerialized as any,
+          lastTraining: this.lastTraining,
+          updatedAt: new Date()
+        }
+      });
+    } catch (error) {
+      console.error(`Failed to save model for ${this.organizationId}:`, error);
+    }
+  }
+}
+
 export class AIRecommendationEngine {
   private static instance: AIRecommendationEngine;
+  private clientModels: Map<string, ClientAIModel> = new Map();
 
   static getInstance(): AIRecommendationEngine {
     if (!AIRecommendationEngine.instance) {
       AIRecommendationEngine.instance = new AIRecommendationEngine();
     }
     return AIRecommendationEngine.instance;
+  }
+
+  /**
+   * Get or create client-specific AI model
+   */
+  private async getClientModel(organizationId: string): Promise<ClientAIModel> {
+    if (!this.clientModels.has(organizationId)) {
+      const clientModel = new ClientAIModel(organizationId);
+      await clientModel.initialize();
+      this.clientModels.set(organizationId, clientModel);
+    }
+    return this.clientModels.get(organizationId)!;
   }
 
   /**
@@ -57,21 +327,34 @@ export class AIRecommendationEngine {
       throw new Error('Issue not found');
     }
 
+    // Get client-specific AI model
+    const clientModel = await this.getClientModel(context.organizationId);
+
     const recommendations: AIRecommendation[] = [];
 
-    // 1. Recommend existing initiatives
-    const initiativeRecommendations = await this.recommendInitiatives(issue, context);
+    // 1. Recommend existing initiatives (with client-specific learning)
+    const initiativeRecommendations = await this.recommendInitiatives(issue, context, clientModel);
     recommendations.push(...initiativeRecommendations);
 
-    // 2. Recommend clustering with similar issues
-    const clusterRecommendations = await this.recommendClusters(issue, context);
+    // 2. Recommend clustering with similar issues (with client-specific learning)
+    const clusterRecommendations = await this.recommendClusters(issue, context, clientModel);
     recommendations.push(...clusterRecommendations);
 
-    // 3. Recommend existing solutions
-    const solutionRecommendations = await this.recommendSolutions(issue, context);
+    // 3. Recommend existing solutions (with client-specific learning)
+    const solutionRecommendations = await this.recommendSolutions(issue, context, clientModel);
     recommendations.push(...solutionRecommendations);
 
-    return recommendations.sort((a, b) => b.confidence - a.confidence);
+    // Apply client-specific confidence adjustments
+    const adjustedRecommendations = recommendations.map(rec => ({
+      ...rec,
+      confidence: clientModel.calculateClientSpecificConfidence(
+        rec.confidence,
+        rec.type,
+        rec.metadata
+      )
+    }));
+
+    return adjustedRecommendations.sort((a, b) => b.confidence - a.confidence);
   }
 
   /**
@@ -79,7 +362,8 @@ export class AIRecommendationEngine {
    */
   private async recommendInitiatives(
     issue: any,
-    context: RecommendationContext
+    context: RecommendationContext,
+    clientModel: ClientAIModel
   ): Promise<AIRecommendation[]> {
     // Get existing initiatives in the organization
     const initiatives = await prisma.initiative.findMany({
@@ -153,7 +437,8 @@ export class AIRecommendationEngine {
    */
   private async recommendClusters(
     issue: any,
-    context: RecommendationContext
+    context: RecommendationContext,
+    clientModel: ClientAIModel
   ): Promise<AIRecommendation[]> {
     // Get recent issues that could form clusters
     const recentIssues = await prisma.issue.findMany({
@@ -230,7 +515,8 @@ export class AIRecommendationEngine {
    */
   private async recommendSolutions(
     issue: any,
-    context: RecommendationContext
+    context: RecommendationContext,
+    clientModel: ClientAIModel
   ): Promise<AIRecommendation[]> {
     // Get existing solutions that might be relevant
     const solutions = await prisma.solution.findMany({
@@ -310,7 +596,9 @@ export class AIRecommendationEngine {
     recommendationId: string,
     accepted: boolean,
     userId: string,
-    organizationId: string
+    organizationId: string,
+    recommendationType?: string,
+    recommendationData?: any
   ): Promise<void> {
     await prisma.aIRecommendationFeedback.create({
       data: {
@@ -321,6 +609,17 @@ export class AIRecommendationEngine {
         timestamp: new Date()
       }
     });
+
+    // Update client-specific AI model with feedback
+    const clientModel = await this.getClientModel(organizationId);
+    if (recommendationType && recommendationData) {
+      await clientModel.learnFromFeedback(
+        recommendationType,
+        recommendationData,
+        accepted,
+        userId
+      );
+    }
 
     // Update AI learning models based on feedback
     await this.updateAIModels(recommendationId, accepted, organizationId);
