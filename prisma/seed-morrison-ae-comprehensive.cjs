@@ -466,6 +466,103 @@ async function main() {
     }
   });
 
+  // Communication & Management Issues
+  const issue9 = await prisma.issue.create({
+    data: {
+      description: 'Inconsistent internal communication about project changes - Project changes communicated through informal channels (hallway conversations, random emails). Team members missing critical updates leading to design conflicts and rework.',
+      category: 'Process',
+      status: 'OPEN',
+      department: 'Project Management',
+      votes: 16,
+      heatmapScore: 78,
+      keywords: ['internal communication', 'project changes', 'team coordination', 'information flow'],
+      authorId: mikeRodriguez.id,
+      organizationId: morrisonAE.id,
+      createdAt: new Date(Date.now() - 11 * 24 * 60 * 60 * 1000),
+      updatedAt: new Date()
+    }
+  });
+
+  const issue10 = await prisma.issue.create({
+    data: {
+      description: 'Management not providing clear project priorities - Multiple urgent projects competing for resources with unclear direction from leadership. Team members confused about what to work on first, leading to burnout and missed deadlines.',
+      category: 'People',
+      status: 'OPEN',
+      department: 'Management',
+      votes: 22,
+      heatmapScore: 95,
+      keywords: ['management support', 'project priorities', 'resource allocation', 'leadership clarity'],
+      authorId: sarahChen.id,
+      organizationId: morrisonAE.id,
+      createdAt: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000),
+      updatedAt: new Date()
+    }
+  });
+
+  const issue11 = await prisma.issue.create({
+    data: {
+      description: 'Excessive overtime culture impacting work-life balance - Staff regularly working 60+ hour weeks to meet aggressive deadlines. High stress levels, quality issues from fatigue, and team members considering leaving the firm.',
+      category: 'People',
+      status: 'OPEN',
+      department: 'Management',
+      votes: 18,
+      heatmapScore: 89,
+      keywords: ['workload management', 'overtime', 'work-life balance', 'employee retention', 'burnout'],
+      authorId: rachelGonzalez.id,
+      organizationId: morrisonAE.id,
+      createdAt: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000),
+      updatedAt: new Date()
+    }
+  });
+
+  const issue12 = await prisma.issue.create({
+    data: {
+      description: 'Lack of standardized project communication templates - Each PM uses different formats for status reports, meeting notes, and client updates. Inconsistent information quality and difficulty tracking project health across portfolio.',
+      category: 'Process',
+      status: 'OPEN',
+      department: 'Project Management',
+      votes: 13,
+      heatmapScore: 71,
+      keywords: ['communication templates', 'standardization', 'project reporting', 'consistency'],
+      authorId: mikeRodriguez.id,
+      organizationId: morrisonAE.id,
+      createdAt: new Date(Date.now() - 13 * 24 * 60 * 60 * 1000),
+      updatedAt: new Date()
+    }
+  });
+
+  const issue13 = await prisma.issue.create({
+    data: {
+      description: 'Inadequate feedback and professional development support - Limited career growth opportunities and irregular performance reviews. Junior staff unsure of advancement path, senior staff feeling undervalued and considering external opportunities.',
+      category: 'People',
+      status: 'OPEN',
+      department: 'Management',
+      votes: 15,
+      heatmapScore: 76,
+      keywords: ['professional development', 'career growth', 'performance feedback', 'employee satisfaction'],
+      authorId: alexThompson.id,
+      organizationId: morrisonAE.id,
+      createdAt: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000),
+      updatedAt: new Date()
+    }
+  });
+
+  const issue14 = await prisma.issue.create({
+    data: {
+      description: 'Cross-disciplinary knowledge gaps affecting coordination - Architects lacking MEP knowledge, engineers unfamiliar with architectural design intent. Results in coordination conflicts and inefficient back-and-forth during design development.',
+      category: 'People',
+      status: 'OPEN',
+      department: 'Engineering',
+      votes: 11,
+      heatmapScore: 67,
+      keywords: ['cross-training', 'interdisciplinary knowledge', 'design coordination', 'team collaboration'],
+      authorId: alexThompson.id,
+      organizationId: morrisonAE.id,
+      createdAt: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000),
+      updatedAt: new Date()
+    }
+  });
+
   // === ISSUE CLUSTERS: LOGICAL GROUPINGS ===
   console.log('🔗 Creating issue clusters...');
   
@@ -509,16 +606,35 @@ async function main() {
 
   const communicationCluster = await prisma.issueCluster.create({
     data: {
-      name: 'Client Communication & Documentation',
-      description: 'Issues related to client communication, change tracking, and information management',
+      name: 'Communication & Information Management',
+      description: 'Issues related to internal/external communication, information flow, and documentation standards',
       category: 'Process',
       severity: 'medium',
-      theme: 'Communication gaps leading to rework and revenue loss',
-      keywords: ['client communication', 'documentation', 'change requests'],
+      theme: 'Communication gaps and inconsistent information management causing rework and inefficiency',
+      keywords: ['communication', 'documentation', 'information flow', 'standardization'],
       color: '#F59E0B',
-      issueCount: 2,
-      aiSummary: 'Communication and documentation issues are causing project rework and unbilled services. Needs centralized communication system.',
-      aiConfidence: 72,
+      issueCount: 4,
+      aiSummary: 'Communication and documentation issues across client and internal channels are causing project rework, missed information, and reduced efficiency. Needs comprehensive communication framework.',
+      aiConfidence: 76,
+      aiGeneratedAt: new Date(),
+      organizationId: morrisonAE.id,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    }
+  });
+
+  const managementCluster = await prisma.issueCluster.create({
+    data: {
+      name: 'Management & Leadership Support',
+      description: 'Issues related to management clarity, workload balance, and employee development',
+      category: 'People',
+      severity: 'high',
+      theme: 'Leadership and management gaps affecting team morale, productivity, and retention',
+      keywords: ['management', 'leadership', 'workload', 'professional development', 'employee support'],
+      color: '#EF4444',
+      issueCount: 4,
+      aiSummary: 'Critical management and leadership issues creating high stress, unclear priorities, and employee dissatisfaction. Requires immediate leadership attention and systematic management improvements.',
+      aiConfidence: 82,
       aiGeneratedAt: new Date(),
       organizationId: morrisonAE.id,
       createdAt: new Date(),
@@ -555,6 +671,46 @@ async function main() {
   await prisma.issue.update({
     where: { id: issue6.id },
     data: { clusterId: communicationCluster.id }
+  });
+
+  await prisma.issue.update({
+    where: { id: issue7.id },
+    data: { clusterId: designTechCluster.id }
+  });
+
+  await prisma.issue.update({
+    where: { id: issue8.id },
+    data: { clusterId: managementCluster.id }
+  });
+
+  await prisma.issue.update({
+    where: { id: issue9.id },
+    data: { clusterId: communicationCluster.id }
+  });
+
+  await prisma.issue.update({
+    where: { id: issue10.id },
+    data: { clusterId: managementCluster.id }
+  });
+
+  await prisma.issue.update({
+    where: { id: issue11.id },
+    data: { clusterId: managementCluster.id }
+  });
+
+  await prisma.issue.update({
+    where: { id: issue12.id },
+    data: { clusterId: communicationCluster.id }
+  });
+
+  await prisma.issue.update({
+    where: { id: issue13.id },
+    data: { clusterId: managementCluster.id }
+  });
+
+  await prisma.issue.update({
+    where: { id: issue14.id },
+    data: { clusterId: projectCoordinationCluster.id }
   });
 
   // === INITIATIVES: STRATEGIC SOLUTIONS ===
@@ -648,18 +804,18 @@ async function main() {
 
   const communicationInitiative = await prisma.initiative.create({
     data: {
-      title: 'Client Communication & Change Management System',
-      problem: 'Scattered client communication and poor change request tracking resulting in $20K+ per project in unbilled services.',
-      goal: 'Centralize client communication and automate change request tracking to recover 100% of additional services revenue.',
+      title: 'Comprehensive Communication & Documentation Framework',
+      problem: 'Scattered client communication, inconsistent internal information flow, and poor change request tracking resulting in $20K+ per project in unbilled services and frequent rework.',
+      goal: 'Establish comprehensive communication framework covering client interactions, internal coordination, and standardized documentation to eliminate communication gaps and recover 100% of additional services revenue.',
       type: 'PROCESS_IMPROVEMENT',
       status: 'APPROVED',
       progress: 5,
       difficulty: 6,
-      roi: 400000,
-      priorityScore: 75,
-      budget: 85000,
-      estimatedHours: 320,
-      actualHours: 16,
+      roi: 450000,
+      priorityScore: 78,
+      budget: 95000,
+      estimatedHours: 380,
+      actualHours: 19,
       phase: 'PLANNING',
       timelineStart: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000),
       timelineEnd: new Date(Date.now() + 150 * 24 * 60 * 60 * 1000), // 5 months
@@ -670,21 +826,78 @@ async function main() {
         'Capture 100% of client change requests',
         'Reduce communication-related rework by 80%',
         'Improve client satisfaction scores by 25%',
-        'Increase change order revenue by $150K annually'
+        'Increase change order revenue by $150K annually',
+        'Standardize 100% of project communication templates',
+        'Reduce information gaps by 90%'
       ],
       requirements: [
-        'Implement client communication portal',
-        'Integrate change request workflow with billing',
-        'Train staff on new communication protocols',
-        'Establish automated change request notifications'
+        'Implement comprehensive client communication portal',
+        'Develop standardized internal communication templates',
+        'Integrate change request workflow with billing system',
+        'Create real-time project information dashboard',
+        'Establish communication training program for all staff',
+        'Deploy automated notification and escalation system'
       ],
       acceptanceCriteria: [
-        'All client communication centralized in portal',
-        'Automated change request approval workflow',
-        'Real-time change order billing integration',
-        'Client self-service project status access'
+        'All client communication centralized in portal with audit trail',
+        'Automated change request approval and billing workflow',
+        'Standardized templates for all project communication types',
+        'Real-time project status visibility for all stakeholders',
+        'Client self-service access to project information',
+        '100% staff completion of communication training program'
       ],
       createdAt: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000),
+      updatedAt: new Date()
+    }
+  });
+
+  const managementInitiative = await prisma.initiative.create({
+    data: {
+      title: 'Leadership Excellence & Employee Development Program',
+      problem: 'Unclear management priorities, excessive overtime culture, and inadequate professional development causing high stress, employee dissatisfaction, and potential turnover of 25% of staff.',
+      goal: 'Establish comprehensive leadership framework with clear priorities, sustainable workload management, and robust professional development to improve employee satisfaction by 40% and reduce turnover to <5%.',
+      type: 'ORGANIZATIONAL_CHANGE',
+      status: 'IN_PROGRESS',
+      progress: 25,
+      difficulty: 9,
+      roi: 850000,
+      priorityScore: 95,
+      budget: 180000,
+      estimatedHours: 520,
+      actualHours: 130,
+      phase: 'EXECUTION',
+      timelineStart: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000),
+      timelineEnd: new Date(Date.now() + 160 * 24 * 60 * 60 * 1000), // 6 months
+      ownerId: davidMorrison.id,
+      organizationId: morrisonAE.id,
+      clusterId: managementCluster.id,
+      kpis: [
+        'Reduce average weekly hours to <45 per employee',
+        'Increase employee satisfaction scores by 40%',
+        'Reduce turnover rate to <5% annually',
+        'Achieve 100% completion of performance reviews on schedule',
+        'Establish clear career advancement paths for all roles',
+        'Improve management effectiveness scores by 50%'
+      ],
+      requirements: [
+        'Implement comprehensive workload monitoring and capacity planning',
+        'Establish clear project prioritization framework and communication',
+        'Create structured professional development program with career paths',
+        'Deploy regular performance feedback and review system',
+        'Implement management training program for all team leads',
+        'Establish employee wellness and work-life balance initiatives',
+        'Create transparent company communication and decision-making processes'
+      ],
+      acceptanceCriteria: [
+        'Real-time workload dashboard showing capacity utilization',
+        'Weekly priority setting meetings with clear communication to all staff',
+        'Individual development plans for 100% of employees',
+        'Quarterly performance reviews completed on time',
+        'Management training certification for all team leaders',
+        'Employee satisfaction survey scores >85%',
+        'Measurable reduction in stress-related incidents and sick days'
+      ],
+      createdAt: new Date(Date.now() - 12 * 24 * 60 * 60 * 1000),
       updatedAt: new Date()
     }
   });
@@ -754,6 +967,110 @@ async function main() {
     }
   });
 
+  // Solutions for Communication Initiative
+  const solution4 = await prisma.initiativeSolution.create({
+    data: {
+      initiativeId: communicationInitiative.id,
+      title: 'Client Portal and Communication Hub Development',
+      description: 'Build comprehensive client portal with project dashboards, document sharing, change request tracking, and automated notifications.',
+      type: 'TECHNOLOGY',
+      status: 'PLANNED',
+      priority: 1,
+      estimatedHours: 160,
+      actualHours: 0,
+      assignedToId: alexThompson.id,
+      progress: 0,
+      organizationId: morrisonAE.id,
+      plannedStartDate: new Date(Date.now() + 45 * 24 * 60 * 60 * 1000),
+      plannedEndDate: new Date(Date.now() + 105 * 24 * 60 * 60 * 1000),
+      createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
+      updatedAt: new Date()
+    }
+  });
+
+  const solution5 = await prisma.initiativeSolution.create({
+    data: {
+      initiativeId: communicationInitiative.id,
+      title: 'Internal Communication Templates and Training Program',
+      description: 'Develop standardized templates for all internal communication types and implement comprehensive training program for consistent usage.',
+      type: 'PROCESS',
+      status: 'DRAFT',
+      priority: 2,
+      estimatedHours: 120,
+      actualHours: 0,
+      assignedToId: jenniferKim.id,
+      progress: 0,
+      organizationId: morrisonAE.id,
+      plannedStartDate: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000),
+      plannedEndDate: new Date(Date.now() + 120 * 24 * 60 * 60 * 1000),
+      createdAt: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000),
+      updatedAt: new Date()
+    }
+  });
+
+  // Solutions for Management Initiative
+  const solution6 = await prisma.initiativeSolution.create({
+    data: {
+      initiativeId: managementInitiative.id,
+      title: 'Workload Management and Capacity Planning System',
+      description: 'Implement AI-powered workload tracking system with real-time capacity monitoring, automated alerts for overallocation, and predictive planning capabilities.',
+      type: 'TECHNOLOGY',
+      status: 'IN_PROGRESS',
+      priority: 1,
+      estimatedHours: 180,
+      actualHours: 65,
+      assignedToId: alexThompson.id,
+      progress: 40,
+      organizationId: morrisonAE.id,
+      plannedStartDate: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000),
+      plannedEndDate: new Date(Date.now() + 45 * 24 * 60 * 60 * 1000),
+      actualStartDate: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000),
+      createdAt: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000),
+      updatedAt: new Date()
+    }
+  });
+
+  const solution7 = await prisma.initiativeSolution.create({
+    data: {
+      initiativeId: managementInitiative.id,
+      title: 'Management Training and Leadership Development Program',
+      description: 'Comprehensive leadership training covering priority setting, team communication, performance management, and work-life balance strategies.',
+      type: 'TRAINING',
+      status: 'IN_PROGRESS',
+      priority: 2,
+      estimatedHours: 200,
+      actualHours: 45,
+      assignedToId: davidMorrison.id,
+      progress: 25,
+      organizationId: morrisonAE.id,
+      plannedStartDate: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000),
+      plannedEndDate: new Date(Date.now() + 100 * 24 * 60 * 60 * 1000),
+      actualStartDate: new Date(Date.now() - 18 * 24 * 60 * 60 * 1000),
+      createdAt: new Date(Date.now() - 18 * 24 * 60 * 60 * 1000),
+      updatedAt: new Date()
+    }
+  });
+
+  const solution8 = await prisma.initiativeSolution.create({
+    data: {
+      initiativeId: managementInitiative.id,
+      title: 'Employee Development and Career Path Framework',
+      description: 'Structured professional development program with clear career advancement paths, mentorship programs, and skill development tracking.',
+      type: 'PROCESS',
+      status: 'PLANNED',
+      priority: 3,
+      estimatedHours: 140,
+      actualHours: 20,
+      assignedToId: sarahChen.id,
+      progress: 15,
+      organizationId: morrisonAE.id,
+      plannedStartDate: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000),
+      plannedEndDate: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000),
+      createdAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000),
+      updatedAt: new Date()
+    }
+  });
+
   // === SOLUTION TASKS: DETAILED EXECUTION STEPS ===
   console.log('📋 Creating solution tasks...');
   
@@ -809,6 +1126,137 @@ async function main() {
       solutionId: solution1.id,
       organizationId: morrisonAE.id,
       createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
+      updatedAt: new Date()
+    }
+  });
+
+  // Tasks for Solution 6 (Workload Management)
+  const task4 = await prisma.solutionTask.create({
+    data: {
+      title: 'Design workload tracking system architecture',
+      description: 'Define system requirements, data model, and integration points for workload monitoring platform.',
+      status: 'COMPLETED',
+      priority: 3,
+      progress: 100,
+      estimatedHours: 24,
+      actualHours: 28,
+      dueDate: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000),
+      completedAt: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000),
+      assignedToId: alexThompson.id,
+      solutionId: solution6.id,
+      organizationId: morrisonAE.id,
+      createdAt: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000),
+      updatedAt: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000)
+    }
+  });
+
+  const task5 = await prisma.solutionTask.create({
+    data: {
+      title: 'Develop capacity monitoring dashboard',
+      description: 'Build real-time dashboard showing team capacity, workload distribution, and overallocation alerts.',
+      status: 'IN_PROGRESS',
+      priority: 3,
+      progress: 65,
+      estimatedHours: 40,
+      actualHours: 25,
+      dueDate: new Date(Date.now() + 8 * 24 * 60 * 60 * 1000),
+      assignedToId: alexThompson.id,
+      solutionId: solution6.id,
+      organizationId: morrisonAE.id,
+      createdAt: new Date(Date.now() - 12 * 24 * 60 * 60 * 1000),
+      updatedAt: new Date()
+    }
+  });
+
+  const task6 = await prisma.solutionTask.create({
+    data: {
+      title: 'Implement automated workload alerts',
+      description: 'Configure notification system for capacity overruns, deadline conflicts, and resource allocation issues.',
+      status: 'TODO',
+      priority: 2,
+      progress: 0,
+      estimatedHours: 20,
+      actualHours: 0,
+      dueDate: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000),
+      assignedToId: alexThompson.id,
+      solutionId: solution6.id,
+      organizationId: morrisonAE.id,
+      createdAt: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000),
+      updatedAt: new Date()
+    }
+  });
+
+  // Tasks for Solution 7 (Management Training)
+  const task7 = await prisma.solutionTask.create({
+    data: {
+      title: 'Assess current management practices and identify gaps',
+      description: 'Conduct 360-degree feedback assessment of all managers and identify specific training needs.',
+      status: 'COMPLETED',
+      priority: 3,
+      progress: 100,
+      estimatedHours: 16,
+      actualHours: 18,
+      dueDate: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000),
+      completedAt: new Date(Date.now() - 12 * 24 * 60 * 60 * 1000),
+      assignedToId: davidMorrison.id,
+      solutionId: solution7.id,
+      organizationId: morrisonAE.id,
+      createdAt: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000),
+      updatedAt: new Date(Date.now() - 12 * 24 * 60 * 60 * 1000)
+    }
+  });
+
+  const task8 = await prisma.solutionTask.create({
+    data: {
+      title: 'Develop priority setting and communication framework',
+      description: 'Create structured approach for weekly priority setting, clear communication cascading, and project status updates.',
+      status: 'IN_PROGRESS',
+      priority: 3,
+      progress: 40,
+      estimatedHours: 32,
+      actualHours: 12,
+      dueDate: new Date(Date.now() + 12 * 24 * 60 * 60 * 1000),
+      assignedToId: davidMorrison.id,
+      solutionId: solution7.id,
+      organizationId: morrisonAE.id,
+      createdAt: new Date(Date.now() - 18 * 24 * 60 * 60 * 1000),
+      updatedAt: new Date()
+    }
+  });
+
+  const task9 = await prisma.solutionTask.create({
+    data: {
+      title: 'Implement management training workshops',
+      description: 'Execute 8-week management training program covering leadership, communication, and performance management.',
+      status: 'TODO',
+      priority: 2,
+      progress: 0,
+      estimatedHours: 64,
+      actualHours: 0,
+      dueDate: new Date(Date.now() + 35 * 24 * 60 * 60 * 1000),
+      assignedToId: davidMorrison.id,
+      solutionId: solution7.id,
+      organizationId: morrisonAE.id,
+      createdAt: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000),
+      updatedAt: new Date()
+    }
+  });
+
+  // Tasks for Solution 4 (Client Portal)
+  const task10 = await prisma.solutionTask.create({
+    data: {
+      title: 'Design client portal user interface and workflows',
+      description: 'Create wireframes and user experience design for client-facing project portal with intuitive navigation.',
+      status: 'TODO',
+      priority: 3,
+      progress: 0,
+      estimatedHours: 28,
+      actualHours: 0,
+      dueDate: new Date(Date.now() + 50 * 24 * 60 * 60 * 1000),
+      assignedToId: alexThompson.id,
+      solutionId: solution4.id,
+      organizationId: morrisonAE.id,
+      createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
       updatedAt: new Date()
     }
   });
@@ -950,6 +1398,108 @@ async function main() {
     }
   });
 
+  // Process Ideas
+  await prisma.idea.create({
+    data: {
+      title: 'Cross-Discipline Knowledge Sharing Program',
+      description: 'Monthly workshops where architects present to engineers and vice versa, sharing design intent, technical constraints, and best practices to improve coordination.',
+      category: 'Process',
+      status: 'APPROVED',
+      votes: 8,
+      authorId: sarahChen.id,
+      organizationId: morrisonAE.id,
+      createdAt: new Date(Date.now() - 12 * 24 * 60 * 60 * 1000),
+      updatedAt: new Date()
+    }
+  });
+
+  await prisma.idea.create({
+    data: {
+      title: 'Standardized Design Review Checklists',
+      description: 'Create phase-specific checklists for design reviews covering technical requirements, code compliance, coordination items, and client feedback to ensure consistency.',
+      category: 'Process',
+      status: 'SUBMITTED',
+      votes: 6,
+      authorId: rachelGonzalez.id,
+      organizationId: morrisonAE.id,
+      createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
+      updatedAt: new Date()
+    }
+  });
+
+  await prisma.idea.create({
+    data: {
+      title: 'Project Post-Mortem Process Implementation',
+      description: 'Systematic project retrospectives at completion to capture lessons learned, identify improvement opportunities, and build institutional knowledge base.',
+      category: 'Process',
+      status: 'UNDER_REVIEW',
+      votes: 5,
+      authorId: mikeRodriguez.id,
+      organizationId: morrisonAE.id,
+      createdAt: new Date(Date.now() - 9 * 24 * 60 * 60 * 1000),
+      updatedAt: new Date()
+    }
+  });
+
+  // People Ideas
+  await prisma.idea.create({
+    data: {
+      title: 'Junior Staff Mentorship Pairing Program',
+      description: 'Formal mentorship program pairing junior staff with senior architects/engineers for structured guidance, reducing interruptions while improving skill development.',
+      category: 'People',
+      status: 'APPROVED',
+      votes: 12,
+      assignedTo: sarahChen.id,
+      dueDate: new Date(Date.now() + 45 * 24 * 60 * 60 * 1000),
+      authorId: sarahChen.id,
+      organizationId: morrisonAE.id,
+      createdAt: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000),
+      updatedAt: new Date()
+    }
+  });
+
+  await prisma.idea.create({
+    data: {
+      title: 'Flexible Work Schedule Pilot Program',
+      description: 'Test flexible work arrangements including compressed work weeks and remote work options to improve work-life balance and reduce burnout.',
+      category: 'People',
+      status: 'SUBMITTED',
+      votes: 15,
+      authorId: rachelGonzalez.id,
+      organizationId: morrisonAE.id,
+      createdAt: new Date(Date.now() - 11 * 24 * 60 * 60 * 1000),
+      updatedAt: new Date()
+    }
+  });
+
+  await prisma.idea.create({
+    data: {
+      title: 'Monthly Team Building and Wellness Events',
+      description: 'Regular team activities focused on relationship building, stress reduction, and celebrating achievements to improve morale and team cohesion.',
+      category: 'People',
+      status: 'UNDER_REVIEW',
+      votes: 9,
+      authorId: jenniferKim.id,
+      organizationId: morrisonAE.id,
+      createdAt: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000),
+      updatedAt: new Date()
+    }
+  });
+
+  await prisma.idea.create({
+    data: {
+      title: 'Skills-Based Professional Development Budget',
+      description: 'Individual annual budget for each employee to pursue relevant training, certifications, conferences, or courses aligned with career goals and firm needs.',
+      category: 'People',
+      status: 'SUBMITTED',
+      votes: 13,
+      authorId: alexThompson.id,
+      organizationId: morrisonAE.id,
+      createdAt: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000),
+      updatedAt: new Date()
+    }
+  });
+
   // === BUSINESS PROFILE ===
   console.log('🏢 Creating business profile...');
   
@@ -1021,15 +1571,15 @@ async function main() {
   console.log('📊 CREATED DATA SUMMARY:');
   console.log('👥 Users: 6 (Principal, Directors, Senior Staff)');
   console.log('🏢 Organization: Morrison Architecture & Engineering');
-  console.log('📋 Issues: 8 (realistic AE firm challenges)');
-  console.log('🔗 Clusters: 3 (Design Tech, Project Coordination, Communication)');
-  console.log('🚀 Initiatives: 3 (strategic solutions with ROI)');
-  console.log('🛠️ Solutions: 3 (detailed implementation plans)');
-  console.log('📋 Tasks: 3 (execution steps with progress)');
-  console.log('💬 Comments: 3 (team collaboration)');
-  console.log('👍 Votes: 3 (user engagement)');
-  console.log('💡 Ideas: 2 (innovation pipeline)');
-  console.log('🤖 AI Features: Client model + recommendation feedback');
+  console.log('📋 Issues: 14 (comprehensive AE firm challenges)');
+  console.log('🔗 Clusters: 4 (Design Tech, Project Coordination, Communication, Management)');
+  console.log('🚀 Initiatives: 4 (strategic solutions with detailed ROI analysis)');
+  console.log('🛠️ Solutions: 8 (comprehensive implementation plans in various states)');
+  console.log('📋 Tasks: 10 (detailed execution steps with realistic progress tracking)');
+  console.log('💬 Comments: 3 (team collaboration scenarios)');
+  console.log('👍 Votes: 3 (user engagement patterns)');
+  console.log('💡 Ideas: 9 (technology, process, and people innovations)');
+  console.log('🤖 AI Features: Client model + recommendation feedback + performance monitoring');
   console.log('');
   console.log('🎯 DEMO ACCOUNTS:');
   console.log('   👑 David Morrison (Principal): david.morrison@morrisonae.com / Admin123!');
