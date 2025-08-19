@@ -15,8 +15,9 @@
     "cypress:open": "cypress open",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
-    "prisma:seed": "node prisma/seed-comprehensive-flowvision.cjs",
+    "prisma:seed": "node prisma/seed-morrison-ae-comprehensive.cjs",
     "prisma:seed:comprehensive": "node prisma/seed-comprehensive-flowvision.cjs",
+    "prisma:seed:morrison": "node prisma/seed-morrison-ae-comprehensive.cjs",
     "prisma:seed:feedback": "node prisma/seed-employee-feedback.cjs",
     "dev:reset": "node scripts/dev-reset.js",
     "prepare": "husky",
@@ -104,5 +105,8 @@
     "env": {
       "AXE_DISABLED": false
     }
+  },
+  "prisma": {
+    "seed": "node prisma/seed-morrison-ae-comprehensive.cjs"
   }
 }
