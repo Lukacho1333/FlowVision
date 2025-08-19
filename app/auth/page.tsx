@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
 export default function AuthPage() {
-  const [email, setEmail] = useState('admin@test.com');
+  const [email, setEmail] = useState('david.morrison@morrisonae.com');
   const [password, setPassword] = useState('Admin123!');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -20,19 +20,43 @@ export default function AuthPage() {
     }
   }, [session, router]);
 
-  // Demo test accounts for Sprint 20 testing
+  // Morrison A&E demo accounts - comprehensive Sprint 20 showcase
   const demoUsers = [
     {
-      email: 'admin@test.com',
-      name: 'Test Admin',
-      role: 'Administrator',
-      description: 'Admin access for Sprint 20 AI features testing',
+      email: 'david.morrison@morrisonae.com',
+      name: 'David Morrison',
+      role: 'Principal/CEO',
+      description: 'Strategic oversight and executive decision-making',
     },
     {
-      email: 'user@test.com',
-      name: 'Test User',
-      role: 'Team Leader',
-      description: 'Standard user access for feature testing',
+      email: 'sarah.chen@morrisonae.com',
+      name: 'Sarah Chen',
+      role: 'Design Director',
+      description: 'Creative leadership and design process management',
+    },
+    {
+      email: 'mike.rodriguez@morrisonae.com',
+      name: 'Mike Rodriguez',
+      role: 'Project Director',
+      description: 'Operations delivery and project coordination',
+    },
+    {
+      email: 'jennifer.kim@morrisonae.com',
+      name: 'Jennifer Kim',
+      role: 'Business Development Director',
+      description: 'Growth strategy and client relationship management',
+    },
+    {
+      email: 'alex.thompson@morrisonae.com',
+      name: 'Alex Thompson',
+      role: 'Engineering Director',
+      description: 'Technical systems and compliance oversight',
+    },
+    {
+      email: 'rachel.gonzalez@morrisonae.com',
+      name: 'Rachel Gonzalez',
+      role: 'Senior Architect',
+      description: 'Design execution and technical coordination',
     }
   ];
 
@@ -79,7 +103,10 @@ export default function AuthPage() {
         </p>
         <div className="mt-4 bg-blue-50 border border-blue-200 rounded-lg p-3">
           <p className="text-center text-xs text-blue-700 font-medium">
-            🏗️ DEMO ENVIRONMENT: Morrison AE - 75+ Employee Architecture Firm
+            🏗️ SPRINT 20 AI REVOLUTION DEMO: Morrison A&E - Complete Architecture Firm Showcase
+          </p>
+          <p className="text-center text-xs text-blue-600 mt-1">
+            Full feature coverage: Issues → Clusters → Initiatives → Solutions → AI Learning
           </p>
         </div>
       </div>
