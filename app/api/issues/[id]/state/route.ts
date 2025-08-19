@@ -102,10 +102,10 @@ export const GET = requireAuth(async (request: NextRequest, context: TenantConte
         cluster: {
           select: { id: true, name: true, issueCount: true }
         },
-        initiative: {
+        initiatives: {
           select: { id: true, title: true, status: true }
         },
-        solution: {
+        solutions: {
           select: { id: true, title: true, status: true }
         }
       }
@@ -117,9 +117,9 @@ export const GET = requireAuth(async (request: NextRequest, context: TenantConte
 
     // Determine current status
     let currentStatus: IssueStatus = 'STANDALONE';
-    if (issue.solution) {
+    if (issue.solutions && issue.solutions.length > 0) {
       currentStatus = issue.status as IssueStatus || 'ASSIGNED';
-    } else if (issue.initiative) {
+    } else if (issue.initiatives && issue.initiatives.length > 0) {
       currentStatus = 'ASSIGNED';
     } else if (issue.cluster) {
       currentStatus = 'CLUSTERED';
@@ -151,8 +151,8 @@ export const GET = requireAuth(async (request: NextRequest, context: TenantConte
         status: currentStatus,
         category: issue.category,
         cluster: issue.cluster,
-        initiative: issue.initiative,
-        solution: issue.solution
+        initiative: issue.initiatives?.[0] || null,
+        solution: issue.solutions?.[0] || null
       },
       availableActions: availableTransitions.map(t => ({
         action: t.action,
@@ -186,7 +186,7 @@ export const POST = requireAuth(async (request: NextRequest, context: TenantCont
       },
       include: {
         cluster: true,
-        initiative: true,
+        initiatives: true,
         solution: true
       }
     });
@@ -197,9 +197,9 @@ export const POST = requireAuth(async (request: NextRequest, context: TenantCont
 
     // Determine current status
     let currentStatus: IssueStatus = 'STANDALONE';
-    if (issue.solution) {
+    if (issue.solutions && issue.solutions.length > 0) {
       currentStatus = issue.status as IssueStatus || 'ASSIGNED';
-    } else if (issue.initiative) {
+    } else if (issue.initiatives && issue.initiatives.length > 0) {
       currentStatus = 'ASSIGNED';
     } else if (issue.cluster) {
       currentStatus = 'CLUSTERED';
