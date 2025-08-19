@@ -187,7 +187,7 @@ export const POST = requireAuth(async (request: NextRequest, context: TenantCont
       include: {
         cluster: true,
         initiatives: true,
-        solution: true
+        solutions: true
       }
     });
 
@@ -352,10 +352,10 @@ async function executeStateTransition(
       cluster: {
         select: { id: true, name: true, issueCount: true }
       },
-      initiative: {
+      initiatives: {
         select: { id: true, title: true, status: true }
       },
-      solution: {
+      solutions: {
         select: { id: true, title: true, status: true }
       },
       User: {
