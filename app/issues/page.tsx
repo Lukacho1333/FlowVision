@@ -10,6 +10,7 @@ import AIAnalysis from './ai-analysis';
 import ClusteringView from './clustering-view';
 import AIClusters from './ai-clusters';
 import AISummary from '@/components/AISummary';
+import ExecutiveClusteringView from '@/components/ExecutiveClusteringView';
 import { trackEvent } from '@/utils/analytics';
 import { useToast } from '@/components/ToastProvider';
 
@@ -41,7 +42,7 @@ export default function IssuesPage() {
   const [newIssue, setNewIssue] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'overview' | 'report' | 'browse' | 'ai-analysis'>(
+  const [activeTab, setActiveTab] = useState<'overview' | 'report' | 'browse' | 'ai-analysis' | 'executive'>(
     'overview'
   );
   const [selectedIssues, setSelectedIssues] = useState<Set<string>>(new Set());
@@ -542,6 +543,17 @@ export default function IssuesPage() {
             >
               🧠 AI Analysis
               <span className="bg-blue-100 text-blue-600 px-2 py-0.5 rounded-full text-xs">AI</span>
+            </button>
+            <button
+              onClick={() => setActiveTab('executive')}
+              className={`py-3 px-3 sm:px-4 border-b-2 font-medium text-sm transition-colors flex items-center gap-2 whitespace-nowrap ${
+                activeTab === 'executive'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              🏛️ Executive View
+              <span className="bg-green-100 text-green-600 px-2 py-0.5 rounded-full text-xs">Business</span>
             </button>
           </nav>
         </div>
@@ -1258,6 +1270,26 @@ Example: 'Our project approval process takes 3-4 weeks due to unclear requiremen
                 setMessage(`${ids.length} issues added by AI grouping`);
               }}
             />
+          </div>
+        )}
+
+        {activeTab === 'executive' && (
+          <div className="space-y-8">
+            <div className="bg-gradient-to-r from-blue-50 to-green-50 rounded-lg p-6 border border-blue-200">
+              <div className="flex items-center space-x-3 mb-4">
+                <span className="text-2xl">🏛️</span>
+                <div>
+                  <h2 className="text-xl font-semibold text-gray-900">Executive Business View</h2>
+                  <p className="text-sm text-gray-600">Issues organized by business impact and strategic importance</p>
+                </div>
+              </div>
+              <div className="text-xs text-blue-700 bg-blue-100 rounded p-2">
+                <strong>For Executives:</strong> This view transforms technical issue categories into business-relevant areas 
+                for strategic decision making. Strategic issues require immediate executive attention, operational issues 
+                affect daily productivity, and tactical issues are implementation-specific concerns.
+              </div>
+            </div>
+            <ExecutiveClusteringView />
           </div>
         )}
       </div>
