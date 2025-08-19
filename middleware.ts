@@ -1,5 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { logger, apiLogger } from '@/lib/logger';
+
+// Simple console logger to avoid import issues in middleware
+const logger = {
+  info: (...args: any[]) => console.log('[INFO]', ...args),
+  error: (...args: any[]) => console.error('[ERROR]', ...args),
+  warn: (...args: any[]) => console.warn('[WARN]', ...args)
+};
 
 export function middleware(request: NextRequest) {
   const startTime = Date.now();
@@ -17,7 +23,7 @@ export function middleware(request: NextRequest) {
 
   // Log API requests with detailed context
   if (request.nextUrl.pathname.startsWith('/api/')) {
-    apiLogger.request(
+    logger.info('API Request',
       request.nextUrl.pathname,
       request.method,
       undefined, // userId will be determined in the API route
@@ -77,7 +83,7 @@ export function middleware(request: NextRequest) {
   const duration = Date.now() - startTime;
 
   if (request.nextUrl.pathname.startsWith('/api/')) {
-    apiLogger.response(
+    logger.info('API Response',
       request.nextUrl.pathname,
       request.method,
       200, // Will be updated by the actual response
