@@ -27,8 +27,12 @@
     "quality:gates": "node scripts/quality-gates/run-all.js",
     "sprint:update": "node scripts/ai-automation/update-sprint.js",
     "health-check": "./scripts/validate-repository-health.sh",
+    "env-check": "./scripts/validate-environment.sh",
+    "ai-health": "./scripts/ai-service-health-check.sh",
     "pre-commit-check": "./scripts/validate-repository-health.sh",
-    "validate": "npx tsc --noEmit && npm run lint && npm test && npm run build"
+    "validate": "npx tsc --noEmit && npm run lint && npm test && npm run build",
+    "dev-setup": "npm run env-check && npm run ai-health",
+    "full-health": "npm run health-check && npm run ai-health"
   },
   "keywords": [],
   "author": "",
