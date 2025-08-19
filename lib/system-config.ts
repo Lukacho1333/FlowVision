@@ -508,7 +508,7 @@ class SystemConfigService {
 
   public clearCache(): void {
     this.cache.clear();
-    console.log('🧹 Configuration cache cleared');
+
   }
 
   private cleanupExpiredCache(): void {

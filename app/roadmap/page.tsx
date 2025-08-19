@@ -401,7 +401,7 @@ export default function RoadmapPage() {
             onTeamClick={(team) => {
               // Debug log in development only
               if (process.env.NODE_ENV === 'development') {
-                console.log('Team clicked:', team);
+
               }
               // Could open team detail modal or navigate to team page
             }}

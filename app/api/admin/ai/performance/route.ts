@@ -7,7 +7,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAuth, TenantContext } from '@/lib/api-middleware';
+import { requireAdmin, TenantContext } from '@/lib/api-middleware';
 import { 
   getAIPerformanceStats,
   getAIPerformanceHealth,
@@ -28,9 +28,8 @@ import {
  * GET /api/admin/ai/performance
  * Get AI performance metrics and system health
  */
-export async function GET(request: NextRequest) {
+export const GET = requireAdmin(async (request: NextRequest, context: TenantContext) => {
   try {
-    const context = await requireAuth(request, ['ADMIN']) as TenantContext;
     const url = new URL(request.url);
     const metric = url.searchParams.get('metric');
     const organizationId = url.searchParams.get('organizationId') || context.organizationId;
@@ -103,15 +102,14 @@ export async function GET(request: NextRequest) {
       { status: 500 }
     );
   }
-}
+});
 
 /**
  * POST /api/admin/ai/performance
  * Update performance thresholds or resolve alerts
  */
-export async function POST(request: NextRequest) {
+export const POST = requireAdmin(async (request: NextRequest, context: TenantContext) => {
   try {
-    const context = await requireAuth(request, ['ADMIN']) as TenantContext;
     const body = await request.json();
     const { action, ...data } = body;
 
@@ -144,4 +142,4 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
-}
+});

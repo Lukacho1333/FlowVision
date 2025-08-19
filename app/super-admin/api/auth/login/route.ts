@@ -5,7 +5,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { superAdminAuth } from '@/lib/super-admin-auth';
+import { superAdminAuth, SuperAdminAuthService } from '@/lib/super-admin-auth';
 import { z } from 'zod';
 
 const loginSchema = z.object({
@@ -17,7 +17,7 @@ const loginSchema = z.object({
 export async function POST(request: NextRequest) {
   try {
     // Extract request information for security logging
-    const { ipAddress, userAgent } = superAdminAuth.extractRequestInfo(request);
+    const { ipAddress, userAgent } = SuperAdminAuthService.extractRequestInfo(request);
     
     // Validate request body
     const body = await request.json();
@@ -67,7 +67,7 @@ export async function POST(request: NextRequest) {
     console.error('Super admin login error:', error);
 
     // Log failed attempt
-    const { ipAddress, userAgent } = superAdminAuth.extractRequestInfo(request);
+    const { ipAddress, userAgent } = SuperAdminAuthService.extractRequestInfo(request);
     await superAdminAuth.auditLog(
       'system',
       'LOGIN_ERROR',

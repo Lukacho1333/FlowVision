@@ -10,7 +10,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { superAdminAuth } from '@/lib/super-admin-auth';
+import { superAdminAuth, SuperAdminAuthService } from '@/lib/super-admin-auth';
 import { multiTenantAI } from '@/lib/multi-tenant-ai-service';
 import { z } from 'zod';
 
@@ -87,7 +87,7 @@ export async function GET(
     const quotaStatus = config ? await multiTenantAI.checkQuotaStatus(organizationId) : null;
 
     // Log super admin access
-    const { ipAddress, userAgent } = superAdminAuth.extractRequestInfo(request);
+    const { ipAddress, userAgent } = SuperAdminAuthService.extractRequestInfo(request);
     await superAdminAuth.auditLog(
       user.id,
       'CLIENT_AI_CONFIG_VIEW',
@@ -152,7 +152,7 @@ export async function POST(
     });
 
     // Log the change
-    const { ipAddress, userAgent } = superAdminAuth.extractRequestInfo(request);
+    const { ipAddress, userAgent } = SuperAdminAuthService.extractRequestInfo(request);
     await superAdminAuth.auditLog(
       user.id,
       'CLIENT_AI_CONFIG_UPDATED',
@@ -210,7 +210,7 @@ export async function PUT(
     }
 
     const organizationId = params.id;
-    const { ipAddress, userAgent } = superAdminAuth.extractRequestInfo(request);
+    const { ipAddress, userAgent } = SuperAdminAuthService.extractRequestInfo(request);
 
     switch (action) {
       case 'emergency-disable':
@@ -355,7 +355,7 @@ export async function DELETE(
     });
 
     // Log the deletion
-    const { ipAddress, userAgent } = superAdminAuth.extractRequestInfo(request);
+    const { ipAddress, userAgent } = SuperAdminAuthService.extractRequestInfo(request);
     await superAdminAuth.auditLog(
       user.id,
       'CLIENT_AI_CONFIG_DELETED',

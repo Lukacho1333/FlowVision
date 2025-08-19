@@ -67,7 +67,7 @@ export class AIErrorHandler {
 
           // Log successful operation
           if (attempt > 1) {
-            console.log(`✅ ${operationName} succeeded on attempt ${attempt}`);
+
           }
 
           return result;

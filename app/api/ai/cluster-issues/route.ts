@@ -152,8 +152,6 @@ export async function POST(request: NextRequest) {
       where: { isActive: true },
     });
 
-    console.log(`🧠 Clustering ${issues.length} issues using ${method} method`);
-
     // Calculate semantic similarities
     const similarities: SemanticSimilarity[] = [];
 

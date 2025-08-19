@@ -433,7 +433,7 @@ function CategoryCard({
               <CategoryAISummary
                 categoryName={cluster.label}
                 onAnalysisGenerated={(analysis) => {
-                  console.log('Category analysis generated:', analysis);
+
                   track('category_ai_analysis_generated', {
                     category: cluster.label,
                     confidence: analysis.confidence,

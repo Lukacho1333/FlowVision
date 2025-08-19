@@ -9,6 +9,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createSecureAPIHandler, requireAuth, TenantContext } from '@/lib/api-middleware';
 import { rlsPrisma, createTenantPrisma } from '@/lib/row-level-security';
+import { PrismaClient } from '@prisma/client';
+
+const prisma = new PrismaClient();
 import { scoreDifficulty, scoreROI, scorePriority } from '@/utils/ai';
 
 // GET /api/initiatives - List initiatives with RLS enforcement
@@ -128,10 +131,12 @@ export const GET = requireAuth(async (request: NextRequest, context: TenantConte
     });
 
     // Admin users see all initiatives in their org, others see only their own
-    const filteredInitiatives = context.isSuperAdmin || 
-      await tenantPrisma.user.findFirst({
-        where: { id: context.userId, role: 'ADMIN' }
-      }) 
+    // Use regular prisma for admin check since tenantPrisma has restricted interface
+    const isAdmin = context.isSuperAdmin || (await prisma.user.findFirst({
+      where: { id: context.userId, role: 'ADMIN', organizationId: context.organizationId }
+    })) !== null;
+    
+    const filteredInitiatives = isAdmin
       ? initiatives 
       : initiatives.filter(init => init.ownerId === context.userId);
 
@@ -296,9 +301,11 @@ export const PUT = requireAuth(async (request: NextRequest, context: TenantConte
       }
 
       // Non-admin users can only update their own initiatives
-      if (!context.isSuperAdmin && 
-          !(await tenantPrisma.user.findFirst({ where: { id: context.userId, role: 'ADMIN' } })) &&
-          existing.ownerId !== context.userId) {
+      const isUserAdmin = await prisma.user.findFirst({ 
+        where: { id: context.userId, role: 'ADMIN', organizationId: context.organizationId } 
+      });
+      
+      if (!context.isSuperAdmin && !isUserAdmin && existing.ownerId !== context.userId) {
         throw new Error(`Access denied to initiative ${init.id}`);
       }
     }

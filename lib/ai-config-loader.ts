@@ -116,7 +116,6 @@ export class AIConfigLoader {
       this.config = { ...config, userId };
       this.applyConfiguration(config);
 
-      console.log('✅ AI configuration saved to database');
       return true;
     } catch (error) {
       console.error('❌ Failed to save AI configuration:', error);
@@ -259,7 +258,6 @@ export class AIConfigLoader {
         cacheTTL: 3600000, // 1 hour
       });
 
-      console.log(`🤖 AI services configured with model: ${config.model}`);
     } catch (error) {
       console.error('Failed to apply AI configuration:', error);
     }

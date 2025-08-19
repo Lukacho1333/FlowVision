@@ -81,7 +81,7 @@ export class SentryService {
       });
 
       this.isInitialized = true;
-      console.log('✅ Sentry monitoring initialized');
+
     } catch (error) {
       console.error('❌ Failed to initialize Sentry:', error);
     }

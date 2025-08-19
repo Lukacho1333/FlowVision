@@ -622,7 +622,6 @@ export const DEFAULT_SYSTEM_CONFIGURATIONS = [
  * Seed default system configurations
  */
 export async function seedSystemConfiguration(adminUserId?: string) {
-  console.log('🔧 Seeding default system configurations...');
 
   let seedCount = 0;
   let updateCount = 0;
@@ -654,7 +653,7 @@ export async function seedSystemConfiguration(adminUserId?: string) {
           },
         });
         updateCount++;
-        console.log(`  ✅ Updated: ${config.category}.${config.key}`);
+
       } else {
         // Create new configuration
         await prisma.systemConfiguration.create({
@@ -664,17 +663,15 @@ export async function seedSystemConfiguration(adminUserId?: string) {
           },
         });
         seedCount++;
-        console.log(`  🆕 Created: ${config.category}.${config.key}`);
+
       }
     } catch (error) {
       console.error(`  ❌ Failed to seed ${config.category}.${config.key}:`, error);
     }
   }
 
-  console.log(`\n🎉 System configuration seeding completed!`);
-  console.log(`  📊 Created: ${seedCount} new configurations`);
-  console.log(`  🔄 Updated: ${updateCount} existing configurations`);
-  console.log(`  📈 Total configurations: ${DEFAULT_SYSTEM_CONFIGURATIONS.length}`);
+
+
 
   return {
     created: seedCount,

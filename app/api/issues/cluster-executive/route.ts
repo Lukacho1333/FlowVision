@@ -160,7 +160,7 @@ export async function GET(request: NextRequest) {
         ),
         aiAnalysisGenerated: true,
         enhancedClusters: enhancedBusinessAreas.reduce(
-          (sum, area) => sum + area.clusters.filter(c => c.aiAnalysis).length,
+          (sum, area) => sum + area.clusters.filter((c: any) => c.aiAnalysis).length,
           0
         ),
       },

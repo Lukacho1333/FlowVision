@@ -132,7 +132,6 @@ export const IMPACT_TYPES = [
 ];
 
 export async function seedTaxonomy(): Promise<void> {
-  console.log('🌱 Seeding taxonomy data...');
 
   try {
     // Seed business areas  
@@ -177,7 +176,6 @@ export async function seedTaxonomy(): Promise<void> {
       skipDuplicates: true,
     });
 
-    console.log('✅ Taxonomy data seeded successfully');
   } catch (error) {
     console.error('❌ Failed to seed taxonomy data:', error);
     throw error;

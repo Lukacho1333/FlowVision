@@ -4,7 +4,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { superAdminAuth } from '@/lib/super-admin-auth';
+import { superAdminAuth, SuperAdminAuthService } from '@/lib/super-admin-auth';
 import { PrismaClient } from '../../../generated/super-admin-client';
 import { z } from 'zod';
 
@@ -110,7 +110,7 @@ export async function GET(request: NextRequest) {
     ]);
 
     // Log the access
-    const { ipAddress, userAgent } = superAdminAuth.extractRequestInfo(request);
+    const { ipAddress, userAgent } = SuperAdminAuthService.extractRequestInfo(request);
     await superAdminAuth.auditLog(
       user.id,
       'CLIENT_LIST_VIEW',
@@ -201,7 +201,7 @@ export async function POST(request: NextRequest) {
     });
 
     // Log the action
-    const { ipAddress, userAgent } = superAdminAuth.extractRequestInfo(request);
+    const { ipAddress, userAgent } = SuperAdminAuthService.extractRequestInfo(request);
     await superAdminAuth.auditLog(
       user.id,
       'CLIENT_ORGANIZATION_CREATED',
@@ -296,7 +296,7 @@ export async function PUT(request: NextRequest) {
     if (updates.planTier && updates.planTier !== existingOrg.planTier) actionType = 'PLAN_CHANGED';
 
     // Log the action
-    const { ipAddress, userAgent } = superAdminAuth.extractRequestInfo(request);
+    const { ipAddress, userAgent } = SuperAdminAuthService.extractRequestInfo(request);
     await superAdminAuth.auditLog(
       user.id,
       actionType,

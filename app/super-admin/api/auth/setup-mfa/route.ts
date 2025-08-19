@@ -4,7 +4,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { superAdminAuth } from '@/lib/super-admin-auth';
+import { superAdminAuth, SuperAdminAuthService } from '@/lib/super-admin-auth';
 import { z } from 'zod';
 
 const setupMFASchema = z.object({
@@ -68,7 +68,7 @@ export async function PUT(request: NextRequest) {
     // Enable MFA
     await superAdminAuth.enableMFA(user.id, mfaToken);
 
-    const { ipAddress, userAgent } = superAdminAuth.extractRequestInfo(request);
+    const { ipAddress, userAgent } = SuperAdminAuthService.extractRequestInfo(request);
     await superAdminAuth.auditLog(
       user.id,
       'MFA_ENABLED_SUCCESS',
@@ -89,7 +89,7 @@ export async function PUT(request: NextRequest) {
     if (body.sessionToken) {
       const user = await superAdminAuth.validateSession(body.sessionToken);
       if (user) {
-        const { ipAddress, userAgent } = superAdminAuth.extractRequestInfo(request);
+        const { ipAddress, userAgent } = SuperAdminAuthService.extractRequestInfo(request);
         await superAdminAuth.auditLog(
           user.id,
           'MFA_ENABLE_FAILED',

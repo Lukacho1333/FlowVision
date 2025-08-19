@@ -133,7 +133,6 @@ export default function ClusterDetailsModal({ clusterId, onClose }: ClusterDetai
 
     try {
       setCreatingInitiative(true);
-      console.log('🚀 Creating initiative from cluster:', clusterId);
 
       const response = await fetch(`/api/clusters/${clusterId}/initiatives`, {
         method: 'POST',
@@ -149,7 +148,7 @@ export default function ClusterDetailsModal({ clusterId, onClose }: ClusterDetai
       const data = await response.json();
 
       if (response.ok && data.success) {
-        console.log('✅ Initiative created successfully:', data.initiative);
+
         alert(
           `Initiative "${data.initiative.title}" created successfully! Redirecting to view details.`
         );

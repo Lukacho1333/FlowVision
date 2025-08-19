@@ -44,7 +44,7 @@ class OpenAIService {
           enabled: dbConfig.enabled,
         };
         this.client = new OpenAI({ apiKey: dbConfig.apiKey });
-        console.log(`✅ OpenAI service initialized with model: ${dbConfig.model}`);
+
         return true;
       } else {
         console.warn('⚠️ No AI configuration found in database, service will be disabled');
@@ -862,15 +862,13 @@ RESPONSE FORMAT (JSON):
     // Ensure configuration is loaded from database
     const initialized = await this.ensureInitialized();
     if (!initialized || !this.config?.enabled) {
-      console.log('⚠️ OpenAI service not initialized or disabled');
+
       return null;
     }
 
     try {
       // Get operation-specific configuration for categorization
       const operationConfig = await this.getOperationConfig('categorization');
-
-      console.log('🤖 Making OpenAI API call with model:', operationConfig.model);
 
       const response = await this.client!.chat.completions.create({
         model: operationConfig.model,
@@ -880,8 +878,7 @@ RESPONSE FORMAT (JSON):
       });
 
       const content = response.choices[0]?.message?.content;
-      console.log('✅ OpenAI response received:', content ? 'Success' : 'Empty');
-      console.log('📊 Token usage:', response.usage);
+
 
       return content || null;
     } catch (error) {

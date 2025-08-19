@@ -152,11 +152,6 @@ export async function POST(req: NextRequest) {
 
     // Load taxonomy from database
     const taxonomy = await loadTaxonomyFromDatabase();
-    console.log('🔍 Taxonomy loaded:', {
-      businessAreas: taxonomy.businessAreas.length,
-      departments: taxonomy.departments.length,
-      impactTypes: taxonomy.impactTypes.length,
-    });
 
     // Generate AI category suggestions
     console.log(
@@ -164,7 +159,6 @@ export async function POST(req: NextRequest) {
       description.substring(0, 100) + '...'
     );
     const suggestions = await generateCategorySuggestions(description, businessContext, taxonomy);
-    console.log('✅ AI suggestions result:', suggestions ? 'Generated' : 'Failed');
 
     // Check for duplicate issues
     const duplicateCheck = await checkForDuplicates(description);
@@ -248,9 +242,7 @@ Respond in this exact JSON format:
 Use confidence scores 0-100 based on how clearly the issue fits each category.
 `;
 
-    console.log('🚀 Calling AI service...');
     const response = await AIMigration.generateStructuredResponse(prompt);
-    console.log('📡 AI response received:', response ? 'Success' : 'Failed');
 
     if (!response) {
       console.error('❌ AI service returned null response');

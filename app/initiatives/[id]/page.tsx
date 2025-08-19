@@ -302,7 +302,7 @@ export default function InitiativeDetailPage() {
               initiativeId={params.id}
               onGenerateWithAI={() => {
                 // TODO: Implement AI solution generation
-                console.log('AI solution generation not yet implemented');
+
               }}
               aiLoading={false}
             />

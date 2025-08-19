@@ -71,7 +71,7 @@ class AIServiceMonitor {
 
     try {
       // Check configuration
-      console.log('🔍 Checking AI configuration...');
+
       const config = await aiConfigLoader.loadConfig();
       health.details.configurationLoaded = config !== null;
       health.configurationValid = config !== null && config.enabled;
@@ -83,7 +83,7 @@ class AIServiceMonitor {
       }
 
       // Check AI service connectivity
-      console.log('🔍 Testing AI service connectivity...');
+
       const isConfigured = await AIMigration.isConfigured();
       if (!isConfigured) {
         health.status = 'unhealthy';
@@ -92,7 +92,7 @@ class AIServiceMonitor {
       }
 
       // Perform actual AI operation test
-      console.log('🔍 Testing AI operation...');
+
       const testResult = await AIMigration.testConnection();
 
       if (testResult.success) {

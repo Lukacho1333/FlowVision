@@ -40,7 +40,7 @@ class RedisService {
       });
 
       this.client.on('connect', () => {
-        console.log('✅ Redis connected successfully');
+
         this.isConnected = true;
         this.connectionAttempts = 0;
       });
@@ -52,12 +52,12 @@ class RedisService {
       });
 
       this.client.on('close', () => {
-        console.log('🔌 Redis connection closed');
+
         this.isConnected = false;
       });
 
       this.client.on('reconnecting', () => {
-        console.log('🔄 Redis reconnecting...');
+
       });
 
       // Test connection
