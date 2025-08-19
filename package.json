@@ -34,7 +34,9 @@
     "dev-setup": "npm run env-check && npm run ai-health",
     "full-health": "npm run health-check && npm run ai-health",
     "ensure-compliance": "./scripts/ensure-compliance.sh",
-    "validate-rules": "./scripts/ensure-compliance.sh"
+    "validate-rules": "./scripts/ensure-compliance.sh",
+    "prompt-help": "cat docs/ATTACH_TO_PROMPT.md",
+    "show-compliance": "cat docs/COMPLIANCE_QUICK_REFERENCE.md"
   },
   "keywords": [],
   "author": "",
