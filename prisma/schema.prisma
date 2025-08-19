@@ -545,6 +545,8 @@ model AIRecommendationFeedback {
   @@index([recommendationId])
 }
 
+
+
 model Solution {
   id               String   @id @default(cuid())
   title            String
@@ -759,6 +761,7 @@ model organizations {
   aiClientModel            AIClientModel?
   aiRecommendationFeedback AIRecommendationFeedback[]
   Solution                 Solution[]
+  aiPerformanceMetrics     AIPerformanceMetric[]
 
   @@index([planTier, isActive])
   @@index([slug])

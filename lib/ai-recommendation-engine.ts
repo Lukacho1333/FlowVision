@@ -7,6 +7,9 @@
 
 import { multiTenantAI } from '@/lib/multi-tenant-ai-service';
 import { prisma } from '@/lib/prisma';
+import { recordAIPerformance } from '@/lib/ai-performance-monitor';
+import { aiModelCache } from '@/lib/ai-model-cache';
+import { queueModelTraining } from '@/lib/ai-training-queue';
 
 export interface AIRecommendation {
   id: string;
@@ -315,22 +318,28 @@ export class AIRecommendationEngine {
     issueId: string,
     context: RecommendationContext
   ): Promise<AIRecommendation[]> {
-    const issue = await prisma.issue.findUnique({
-      where: { id: issueId },
-      include: {
-        User: true,
-        userVotes: true
+    const startTime = Date.now();
+    
+    try {
+      // Check cache first for performance
+      const cachedModel = await aiModelCache.getModel(context.organizationId);
+      
+      const issue = await prisma.issue.findUnique({
+        where: { id: issueId },
+        include: {
+          User: true,
+          userVotes: true
+        }
+      });
+
+      if (!issue) {
+        throw new Error('Issue not found');
       }
-    });
 
-    if (!issue) {
-      throw new Error('Issue not found');
-    }
+      // Get client-specific AI model
+      const clientModel = await this.getClientModel(context.organizationId);
 
-    // Get client-specific AI model
-    const clientModel = await this.getClientModel(context.organizationId);
-
-    const recommendations: AIRecommendation[] = [];
+      const recommendations: AIRecommendation[] = [];
 
     // 1. Recommend existing initiatives (with client-specific learning)
     const initiativeRecommendations = await this.recommendInitiatives(issue, context, clientModel);
@@ -354,7 +363,46 @@ export class AIRecommendationEngine {
       )
     }));
 
+    const responseTime = Date.now() - startTime;
+    const avgConfidence = adjustedRecommendations.length > 0 
+      ? adjustedRecommendations.reduce((sum, rec) => sum + rec.confidence, 0) / adjustedRecommendations.length / 100
+      : 0;
+
+    // Record performance metrics
+    recordAIPerformance(context.organizationId, {
+      modelVersion: cachedModel?.version || '1.0',
+      responseTime,
+      accuracy: avgConfidence,
+      confidence: avgConfidence,
+      success: true,
+      memoryUsage: process.memoryUsage().heapUsed / 1024 / 1024 // MB
+    });
+
+    // Queue model training if we have new feedback
+    if (adjustedRecommendations.length > 0) {
+      await queueModelTraining(context.organizationId, 'FEEDBACK_UPDATE', {
+        issueId,
+        recommendationCount: adjustedRecommendations.length,
+        avgConfidence
+      }, 'NORMAL');
+    }
+
     return adjustedRecommendations.sort((a, b) => b.confidence - a.confidence);
+    
+    } catch (error) {
+      const responseTime = Date.now() - startTime;
+      
+      // Record failed performance
+      recordAIPerformance(context.organizationId, {
+        modelVersion: '1.0',
+        responseTime,
+        accuracy: 0,
+        confidence: 0,
+        success: false
+      });
+      
+      throw error;
+    }
   }
 
   /**
