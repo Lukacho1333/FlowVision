@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { categorizeIssuesForExecutives, getExecutivePriorities } from '@/lib/executive-clustering';
+import { executiveAIAnalysis } from '@/lib/ai/ExecutiveAIAnalysis';
 
 /**
  * GET /api/issues/cluster-executive
@@ -66,11 +67,87 @@ export async function GET(request: NextRequest) {
     // Get priority recommendations
     const priorities = getExecutivePriorities(executiveView);
 
-    // Create response with both views for comparison
+    // Generate AI analysis for priority clusters and business areas
+    const enhancedBusinessAreas = await Promise.all(
+      executiveView.businessAreas.map(async (area) => {
+        // Generate business area summary
+        const aiSummary = await executiveAIAnalysis.generateBusinessAreaSummary(area, issues);
+        
+        // Generate AI analysis for active clusters
+        const enhancedClusters = await Promise.all(
+          area.clusters.map(async (cluster) => {
+            if ((cluster.issueCount || 0) > 0) {
+              // Find issues related to this cluster
+              const relatedIssues = issues.filter(issue => {
+                const category = issue.category || 'Process';
+                const keywords = issue.keywords || [];
+                const description = issue.description || '';
+                
+                return cluster.technicalCategories?.includes(category) ||
+                       cluster.keywords.some(keyword =>
+                         keywords.some(k => k.toLowerCase().includes(keyword.toLowerCase())) ||
+                         description.toLowerCase().includes(keyword.toLowerCase())
+                       );
+              });
+
+              // Generate AI analysis for this cluster
+              const aiAnalysis = await executiveAIAnalysis.generateClusterAnalysis(
+                cluster, area, relatedIssues
+              );
+
+              return {
+                ...cluster,
+                aiAnalysis,
+                relatedIssues: relatedIssues.length,
+              };
+            }
+            return cluster;
+          })
+        );
+
+        return {
+          ...area,
+          clusters: enhancedClusters,
+          aiSummary,
+        };
+      })
+    );
+
+    // Generate AI analysis for priority items
+    const enhancedPriorities = await Promise.all(
+      priorities.slice(0, 5).map(async (priority) => {
+        const relatedIssues = issues.filter(issue => {
+          const category = issue.category || 'Process';
+          const keywords = issue.keywords || [];
+          const description = issue.description || '';
+          
+          return priority.cluster.technicalCategories?.includes(category) ||
+                 priority.cluster.keywords.some(keyword =>
+                   keywords.some(k => k.toLowerCase().includes(keyword.toLowerCase())) ||
+                   description.toLowerCase().includes(keyword.toLowerCase())
+                 );
+        });
+
+        const aiAnalysis = await executiveAIAnalysis.generateClusterAnalysis(
+          priority.cluster, priority.businessArea, relatedIssues
+        );
+
+        return {
+          ...priority,
+          aiAnalysis,
+          relatedIssues: relatedIssues.length,
+        };
+      })
+    );
+
+    // Create response with enhanced AI analysis
     const response = {
       success: true,
-      executiveView,
-      priorities: priorities.slice(0, 5), // Top 5 priorities
+      executiveView: {
+        ...executiveView,
+        businessAreas: enhancedBusinessAreas,
+      },
+      priorities: enhancedPriorities, // Top 5 priorities with AI analysis
       stats: {
         totalIssues: executiveView.totalIssues,
         businessAreas: executiveView.businessAreas.length,
@@ -79,6 +156,11 @@ export async function GET(request: NextRequest) {
         tacticalIssues: executiveView.tacticalIssues,
         activeClusters: executiveView.businessAreas.reduce(
           (sum, area) => sum + area.clusters.filter(c => (c.issueCount || 0) > 0).length, 
+          0
+        ),
+        aiAnalysisGenerated: true,
+        enhancedClusters: enhancedBusinessAreas.reduce(
+          (sum, area) => sum + area.clusters.filter(c => c.aiAnalysis).length,
           0
         ),
       },

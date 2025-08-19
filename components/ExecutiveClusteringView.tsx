@@ -10,8 +10,11 @@ import {
   ChartBarIcon,
   ExclamationTriangleIcon,
   CheckCircleIcon,
-  ClockIcon
+  ClockIcon,
+  SparklesIcon,
+  LightBulbIcon
 } from '@heroicons/react/24/outline';
+import AIAnalysisCard, { AIAnalysisData } from './executive/AIAnalysisCard';
 
 interface BusinessArea {
   id: string;
@@ -21,6 +24,7 @@ interface BusinessArea {
   color: string;
   priority: number;
   clusters: ClusterTheme[];
+  aiSummary?: string;
 }
 
 interface ClusterTheme {
@@ -33,6 +37,8 @@ interface ClusterTheme {
   impactLevel: 'strategic' | 'operational' | 'tactical';
   issueCount?: number;
   averageScore?: number;
+  aiAnalysis?: AIAnalysisData;
+  relatedIssues?: number;
 }
 
 interface Priority {
@@ -40,6 +46,8 @@ interface Priority {
   cluster: ClusterTheme;
   priority: 'critical' | 'high' | 'medium' | 'low';
   rationale: string;
+  aiAnalysis?: AIAnalysisData;
+  relatedIssues?: number;
 }
 
 interface ExecutiveClusteringData {
@@ -200,27 +208,57 @@ export default function ExecutiveClusteringView() {
       {data.priorities.length > 0 && (
         <div className="bg-white rounded-lg p-6 border border-gray-200 shadow-sm">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Executive Priorities</h3>
-          <div className="space-y-3">
+          <div className="space-y-4">
             {data.priorities.slice(0, 3).map((priority, index) => {
               const IconComponent = getBusinessAreaIcon(priority.businessArea.icon);
               return (
                 <div
                   key={`${priority.businessArea.id}-${priority.cluster.id}`}
-                  className={`p-4 rounded-lg border ${getPriorityColor(priority.priority)}`}
+                  className={`rounded-lg border ${getPriorityColor(priority.priority)}`}
                 >
-                  <div className="flex items-start space-x-3">
-                    <IconComponent className="h-5 w-5 mt-0.5" />
-                    <div className="flex-1">
-                      <div className="flex items-center space-x-2">
-                        <h4 className="font-medium">{priority.cluster.name}</h4>
-                        <span className="text-xs font-medium px-2 py-1 rounded-full bg-white bg-opacity-50">
-                          {priority.priority.toUpperCase()}
-                        </span>
+                  <div className="p-4">
+                    <div className="flex items-start space-x-3">
+                      <IconComponent className="h-5 w-5 mt-0.5" />
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-2">
+                            <h4 className="font-medium">{priority.cluster.name}</h4>
+                            <span className="text-xs font-medium px-2 py-1 rounded-full bg-white bg-opacity-50">
+                              {priority.priority.toUpperCase()}
+                            </span>
+                          </div>
+                          {priority.aiAnalysis && (
+                            <button
+                              onClick={() => window.open('/initiatives/create', '_blank')}
+                              className="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 transition-colors"
+                            >
+                              <LightBulbIcon className="h-3 w-3 mr-1" />
+                              Create Initiative
+                            </button>
+                          )}
+                        </div>
+                        <p className="text-sm opacity-75 mt-1">{priority.rationale}</p>
+                        <div className="flex items-center space-x-3 mt-2 text-xs opacity-60">
+                          <span>{priority.businessArea.name}</span>
+                          {priority.relatedIssues && (
+                            <span>• {priority.relatedIssues} related issues</span>
+                          )}
+                        </div>
                       </div>
-                      <p className="text-sm opacity-75 mt-1">{priority.rationale}</p>
-                      <p className="text-xs opacity-60 mt-1">{priority.businessArea.name}</p>
                     </div>
                   </div>
+                  
+                  {/* AI Analysis Integration */}
+                  {priority.aiAnalysis && (
+                    <div className="border-t border-white border-opacity-20">
+                      <AIAnalysisCard
+                        analysis={priority.aiAnalysis}
+                        title="AI Strategic Analysis"
+                        showCreateInitiative={false}
+                        className="border-0 bg-transparent"
+                      />
+                    </div>
+                  )}
                 </div>
               );
             })}
@@ -245,10 +283,13 @@ export default function ExecutiveClusteringView() {
               >
                 <div className="flex items-center space-x-3">
                   <IconComponent className="h-6 w-6" style={{ color: area.color }} />
-                  <div>
+                  <div className="flex-1">
                     <h3 className="text-lg font-semibold text-gray-900">{area.name}</h3>
                     <p className="text-sm text-gray-600">{area.description}</p>
                   </div>
+                  {area.aiSummary && (
+                    <SparklesIcon className="h-5 w-5 text-blue-500" title="AI Analysis Available" />
+                  )}
                 </div>
                 <div className="mt-3 flex items-center space-x-4 text-sm text-gray-500">
                   <span>{activeClusters.length} active areas</span>
@@ -256,6 +297,19 @@ export default function ExecutiveClusteringView() {
                     {area.clusters.reduce((sum, c) => sum + (c.issueCount || 0), 0)} issues
                   </span>
                 </div>
+                
+                {/* AI Executive Summary */}
+                {area.aiSummary && (
+                  <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-100">
+                    <div className="flex items-start space-x-2">
+                      <SparklesIcon className="h-4 w-4 text-blue-500 mt-0.5 flex-shrink-0" />
+                      <div>
+                        <h4 className="text-sm font-medium text-blue-900 mb-1">AI Executive Summary</h4>
+                        <p className="text-sm text-blue-800">{area.aiSummary}</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div className="p-6 space-y-4">
