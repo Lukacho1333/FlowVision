@@ -25,7 +25,10 @@
     "ai:start": "node scripts/ai-automation/run-agents.js",
     "ai:monitor": "node .cursor/context/chat-monitor.js",
     "quality:gates": "node scripts/quality-gates/run-all.js",
-    "sprint:update": "node scripts/ai-automation/update-sprint.js"
+    "sprint:update": "node scripts/ai-automation/update-sprint.js",
+    "health-check": "./scripts/validate-repository-health.sh",
+    "pre-commit-check": "./scripts/validate-repository-health.sh",
+    "validate": "npx tsc --noEmit && npm run lint && npm test && npm run build"
   },
   "keywords": [],
   "author": "",

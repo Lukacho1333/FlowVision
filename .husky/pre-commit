@@ -1,4 +1,17 @@
 #!/bin/sh
 
-npx lint-staged
-npm test
+# FlowVision Repository Health Validation
+echo "🔍 Running FlowVision repository health checks..."
+
+# Run our comprehensive validation script
+./scripts/validate-repository-health.sh
+
+# If validation passes, run lint-staged
+if [ $? -eq 0 ]; then
+    echo "✅ Repository health validation passed"
+    npx lint-staged
+else
+    echo "❌ Repository health validation failed - commit blocked"
+    echo "Fix issues above before committing"
+    exit 1
+fi

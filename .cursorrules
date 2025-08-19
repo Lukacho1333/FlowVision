@@ -7,11 +7,12 @@ You are an expert development assistant for the FlowVision project. Always follo
 ## GitHub Workflow Requirements
 
 ### Branch Management
-- **NEVER commit directly to main branch**
+- **NEVER commit directly to main branch** - ZERO EXCEPTIONS
 - **ALWAYS create feature branches** with descriptive names: `feature/description-of-work`
 - **ALWAYS verify branch protection** is enabled before making changes
 - **ALWAYS keep feature branches small and focused** (single feature/fix per branch)
 - **ALWAYS delete merged feature branches** both locally and remotely
+- **MANDATORY**: All main branch changes MUST go through Pull Request process
 
 ### Commit Standards
 - **ALWAYS use conventional commit format**: `type(scope): description`
@@ -20,6 +21,7 @@ You are an expert development assistant for the FlowVision project. Always follo
 - **ALWAYS test locally before committing**
 - **ALWAYS run `npm test` and ensure it passes**
 - **ALWAYS clear build cache** (`rm -rf .next`) if encountering React/build errors
+- **NEVER use `--no-verify` flag** - fix issues instead of bypassing checks
 
 ### Pull Request Process
 - **ALWAYS create PR for any code changes**
@@ -29,17 +31,26 @@ You are an expert development assistant for the FlowVision project. Always follo
 - **ALWAYS resolve merge conflicts locally, never in GitHub UI**
 - **NEVER force push to shared branches**
 - **NEVER bypass branch protection without explicit approval**
+- **NEVER merge PR with failing CI/CD checks**
+- **MANDATORY**: PRs with >10 TypeScript errors must be fixed before review
 
-### Code Quality Gates
+### Code Quality Gates - MANDATORY ENFORCEMENT
 - **ALWAYS run linting**: `npm run lint` (fix issues before committing)
 - **ALWAYS run tests**: `npm test` (must pass before pushing)
 - **ALWAYS verify build**: `npm run build` (for production readiness)
-- **ALWAYS check for TypeScript errors**: Address all `tsc` warnings
+- **ALWAYS check for TypeScript errors**: Address all `tsc --noEmit` warnings
 - **ALWAYS validate database schema changes** with `npx prisma validate`
+- **ZERO TOLERANCE**: No commits allowed with TypeScript errors >5
+- **MANDATORY**: Environment variables must be configured before testing
 
-## Pre-Commit Checklist
+## Pre-Commit Checklist - MANDATORY VALIDATION
 
 Before every commit, verify:
+- [ ] **TypeScript Check**: `npx tsc --noEmit` shows 0 errors
+- [ ] **Test Suite**: `npm test` passes with 0 failures
+- [ ] **Linting**: `npm run lint` shows 0 errors
+- [ ] **Build Validation**: `npm run build` completes successfully
+- [ ] **Schema Validation**: `npx prisma validate` if schema changed
 - [ ] Code changes are tested locally
 - [ ] No console.log statements in production code
 - [ ] No hardcoded values (use environment variables)
@@ -48,6 +59,8 @@ Before every commit, verify:
 - [ ] Database queries use proper error handling
 - [ ] API routes have proper authentication checks
 - [ ] React components use proper key props in lists
+- [ ] Environment variables are documented and configured
+- [ ] Dependencies are properly installed and configured
 
 ## Sync Management
 
@@ -57,16 +70,19 @@ Before every commit, verify:
 3. **End of work**: Push feature branch and create PR
 4. **Never leave uncommitted changes** in working directory
 
-### Emergency Procedures
+### Emergency Procedures - STRICT PROTOCOL
 If you encounter:
 - **React "Objects are not valid as React child"**: Clear build cache with `rm -rf .next`
 - **Module not found errors**: Clear cache and restart dev server
 - **GitHub sync issues**: Create new feature branch from latest main
-- **CI/CD failures**: Fix issues locally, never bypass checks
+- **CI/CD failures**: Fix issues locally, NEVER bypass checks with `--no-verify`
 - **Merge conflicts**: Resolve locally with `git rebase main`
 - **TypeScript null/undefined errors**: Transform Prisma nulls to undefined using `?? undefined`
 - **Stuck interactive rebase**: Remove `.git/*.swp` files and set `git config core.editor "cat"`
 - **Merge conflict markers in files**: Manually resolve all `<<<<<<<`, `=======`, `>>>>>>>` markers
+- **Test failures**: Fix environment variables and dependencies, NEVER ignore
+- **TypeScript errors >10**: Create separate cleanup PR before feature work
+- **Missing dependencies**: Install and configure properly, document in PR
 
 ## Repository Hygiene
 
@@ -119,29 +135,38 @@ If you encounter:
 - **ALWAYS validate organizationId exists** on records before API operations
 - **ALWAYS test multi-tenant scenarios** during API development
 
-## Tool Integration
+## Tool Integration - MANDATORY VALIDATION
 
-### Required Commands
+### Required Commands - ZERO TOLERANCE POLICY
 Before any PR:
 ```bash
+# Environment setup validation
+npm install
+export DATABASE_URL="your-database-url"
+export OPENAI_API_KEY="your-openai-key"
+export AI_CONFIG_ENCRYPTION_KEY="your-encryption-key"
+
 # Clean build
-rm -rf .next
+rm -rf .next node_modules/.cache
 
-# Run full validation
-npm run lint
-npm test
-npm run build
+# MANDATORY validation sequence - ALL MUST PASS
+npx tsc --noEmit          # MUST show 0 errors
+npm run lint              # MUST show 0 errors  
+npm test                  # MUST pass all tests
+npm run build             # MUST complete successfully
 
-# Database validation
+# Database validation (if schema changed)
 npx prisma validate
 npx prisma generate
 ```
 
-### GitHub CLI Usage
+### GitHub CLI Usage - STRICT ENFORCEMENT
 - Use `gh pr create` for consistent PR creation
 - Use `gh pr status` to check PR state
-- Use `gh pr checks` to verify CI/CD status
+- Use `gh pr checks` to verify CI/CD status - MUST be green
 - Use `gh issue list` to track open issues
+- **MANDATORY**: `gh pr checks` must show all green before merge
+- **FORBIDDEN**: Merging PRs with any failing checks
 
 ## Memory Management
 
@@ -280,12 +305,58 @@ Remember these key project facts:
 - **PROACTIVE identification** of blockers and impediments
 - **INTELLIGENT estimation** of story points and timeline adjustments
 
-## Enforcement
+## Repository Health Monitoring - NEW MANDATORY SECTION
+
+### Daily Health Checks
+Run these commands daily to maintain repository health:
+```bash
+# Repository health assessment
+git status                           # Must be clean
+npx tsc --noEmit | wc -l            # Must be 0 TypeScript errors
+npm test 2>&1 | grep -c "FAIL"      # Must be 0 failing tests
+npm run lint 2>&1 | grep -c "error" # Must be 0 lint errors
+gh pr list --state=open             # Review open PRs
+git branch --merged main             # Clean up merged branches
+```
+
+### Weekly Repository Maintenance
+```bash
+# Dependency health
+npm audit                           # Check for vulnerabilities
+npm outdated                        # Check for outdated packages
+npx prisma validate                 # Validate database schema
+docker-compose ps                   # Check service health
+```
+
+### Quality Thresholds - STRICT ENFORCEMENT
+- **TypeScript Errors**: 0 allowed in main branch
+- **Test Coverage**: Minimum 70% required
+- **Lint Errors**: 0 allowed in any PR
+- **Build Failures**: 0 tolerance for broken builds
+- **Open PRs**: Maximum 5 at any time
+- **Stale Branches**: Delete after 7 days if unmerged
+
+### Automated Monitoring Triggers
+- **Pre-commit**: Run TypeScript, lint, test validation
+- **Pre-push**: Ensure all quality gates pass
+- **PR Creation**: Automatic CI/CD validation
+- **Main Branch**: Protected with required status checks
+- **Daily**: Automated dependency and security scanning
+
+## Enforcement - ZERO TOLERANCE POLICY
 
 If any of these rules are violated:
-1. **STOP current work**
-2. **FIX the violation** immediately
-3. **DOCUMENT the fix** in commit message
+1. **STOP current work IMMEDIATELY**
+2. **FIX the violation** before any new work
+3. **DOCUMENT the fix** in detailed commit message
 4. **REVIEW process** to prevent recurrence
+5. **UPDATE .cursorrules** if new patterns emerge
+
+### Violation Consequences
+- **Direct main commits**: Immediate revert and process review
+- **Bypassing checks**: PR rejection and re-work required
+- **TypeScript errors >5**: Mandatory cleanup PR first
+- **Test failures**: No new features until tests pass
+- **Missing environment setup**: Document and configure immediately
 
 These rules are mandatory for maintaining professional, scalable, and reliable development practices.
