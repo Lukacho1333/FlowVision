@@ -15,8 +15,9 @@
     "cypress:open": "cypress open",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
-    "prisma:seed": "node prisma/seed-comprehensive-flowvision.cjs",
+    "prisma:seed": "node prisma/seed-morrison-ae-comprehensive.cjs",
     "prisma:seed:comprehensive": "node prisma/seed-comprehensive-flowvision.cjs",
+    "prisma:seed:morrison": "node prisma/seed-morrison-ae-comprehensive.cjs",
     "prisma:seed:feedback": "node prisma/seed-employee-feedback.cjs",
     "dev:reset": "node scripts/dev-reset.js",
     "prepare": "husky",
@@ -36,6 +37,11 @@
     "@prisma/client": "^6.13.0",
     "@radix-ui/react-dialog": "^1.1.14",
     "@radix-ui/react-popover": "^1.1.14",
+    "@sentry/nextjs": "^8.55.0",
+    "@sentry/profiling-node": "^8.55.0",
+    "@tanstack/react-query": "^5.85.5",
+    "@tanstack/react-query-devtools": "^5.85.5",
+    "@types/ioredis": "^4.28.10",
     "@types/nodemailer": "^6.4.17",
     "autoprefixer": "^10.4.21",
     "bcrypt": "^5.1.1",
@@ -43,6 +49,7 @@
     "date-fns": "^4.1.0",
     "framer-motion": "^12.23.12",
     "html2canvas": "^1.4.1",
+    "ioredis": "^5.7.0",
     "jose": "^5.10.0",
     "jspdf": "^3.0.1",
     "next": "^14.2.5",
@@ -102,5 +109,8 @@
     "env": {
       "AXE_DISABLED": false
     }
+  },
+  "prisma": {
+    "seed": "node prisma/seed-morrison-ae-comprehensive.cjs"
   }
 }

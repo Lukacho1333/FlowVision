@@ -32,6 +32,7 @@ model User {
   ideas                    Idea[]
   initiatives              Initiative[]          @relation("UserInitiatives")
   assignedSolutions        InitiativeSolution[]  @relation("AssignedSolutions")
+  assignedIssueSolutions   Solution[]            @relation("AssignedIssueSolutions")
   Issue                    Issue[]
   approvedRequirementCards RequirementCard[]     @relation("ApprovedRequirementCards")
   assignedRequirementCards RequirementCard[]     @relation("UserRequirementCards")
@@ -100,6 +101,7 @@ model Initiative {
   organizations      organizations?       @relation(fields: [organizationId], references: [id])
   owner              User                 @relation("UserInitiatives", fields: [ownerId], references: [id])
   solutions          InitiativeSolution[] @relation("InitiativeSolutions")
+  issueSolutions     Solution[]
   milestones         Milestone[]
   requirementCards   RequirementCard[]
   assignments        ResourceAssignment[]
@@ -225,6 +227,7 @@ model Issue {
   systemImpacts        IssueSystemImpact[]
   userVotes            Vote[]
   initiatives          Initiative[]        @relation("IssueInitiatives")
+  solutions            Solution[]
 
   @@index([organizationId, authorId])
   @@index([organizationId, clusterId])
@@ -242,6 +245,7 @@ model IssueCluster {
   severity          String         @default("medium")
   theme             String
   keywords          String[]       @default([])
+  issueCount        Int            @default(0)
   rootCauses        Json?
   impactAnalysis    Json?
   metrics           Json?
@@ -336,6 +340,8 @@ model AuditLog {
   action         String
   details        Json
   timestamp      DateTime       @default(now())
+  ipAddress      String?
+  userAgent      String?
   organizationId String?
   organizations  organizations? @relation(fields: [organizationId], references: [id])
   user           User?          @relation(fields: [userId], references: [id])
@@ -435,21 +441,24 @@ model AIUserQuota {
 }
 
 model AIPerformanceMetric {
-  id           String   @id @default(cuid())
-  operation    String
-  model        String
-  avgLatency   Int      @default(0)
-  avgCost      Float    @default(0)
-  avgQuality   Int      @default(100)
-  successRate  Float    @default(1.0)
-  cacheHitRate Float    @default(0.0)
-  requestCount Int      @default(0)
-  totalTokens  Int      @default(0)
-  date         DateTime
-  createdAt    DateTime @default(now())
+  id             String         @id @default(cuid())
+  operation      String
+  model          String
+  avgLatency     Int            @default(0)
+  avgCost        Float          @default(0)
+  avgQuality     Int            @default(100)
+  successRate    Float          @default(1.0)
+  cacheHitRate   Float          @default(0.0)
+  requestCount   Int            @default(0)
+  totalTokens    Int            @default(0)
+  date           DateTime
+  createdAt      DateTime       @default(now())
+  organizationId String?
+  organizations  organizations? @relation(fields: [organizationId], references: [id])
 
   @@unique([operation, model, date])
   @@index([date])
+  @@index([organizationId])
 }
 
 model AICacheEntry {
@@ -494,6 +503,77 @@ model AIQualityFeedback {
   createdAt      DateTime   @default(now())
   usageLog       AIUsageLog @relation(fields: [usageLogId], references: [id], onDelete: Cascade)
   user           User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model AIClientModel {
+  id                    String   @id @default(cuid())
+  organizationId        String   @unique
+  modelData             Json     // Encrypted client-specific learning data
+  learningData          Json?    // Additional learning data structure
+  confidenceThreshold   Float    @default(0.7)
+  learningEnabled       Boolean  @default(true)
+  lastTraining          DateTime? // Alias for lastTrainingAt
+  lastTrainingAt        DateTime?
+  totalFeedbackCount    Int      @default(0)
+  positiveeFeedbackRate Float    @default(0.0)
+  version               String   @default("1.0")
+  isActive              Boolean  @default(true)
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+  organizations         organizations @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  feedback              AIRecommendationFeedback[]
+
+  @@index([organizationId, isActive])
+  @@index([lastTrainingAt])
+}
+
+model AIRecommendationFeedback {
+  id                String        @id @default(cuid())
+  organizationId    String
+  recommendationId  String
+  recommendationType String       // 'priority_score', 'categorization', 'solution_suggestion', etc.
+  accepted          Boolean
+  confidence        Float
+  feedback          String?
+  userId            String
+  metadata          Json?
+  timestamp         DateTime      @default(now()) // Alias for createdAt
+  createdAt         DateTime      @default(now())
+  clientModel       AIClientModel @relation(fields: [organizationId], references: [organizationId], onDelete: Cascade, map: "AIRecommendationFeedback_clientModel_fkey")
+  organizations     organizations @relation(fields: [organizationId], references: [id], onDelete: Cascade, map: "AIRecommendationFeedback_organization_fkey")
+
+  @@index([organizationId, recommendationType])
+  @@index([accepted, createdAt])
+  @@index([timestamp])
+  @@index([recommendationId])
+}
+
+
+
+model Solution {
+  id               String   @id @default(cuid())
+  title            String
+  description      String
+  status           String   @default("DRAFT")
+  organizationId   String
+  issueId          String?
+  initiativeId     String?
+  assignedToId     String?
+  estimatedCost    Float?
+  estimatedHours   Int?
+  priority         Int      @default(0)
+  isAIGenerated    Boolean  @default(false)
+  aiConfidence     Int?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  organizations    organizations @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  issue            Issue?   @relation(fields: [issueId], references: [id])
+  initiative       Initiative? @relation(fields: [initiativeId], references: [id])
+  assignedTo       User?    @relation("AssignedIssueSolutions", fields: [assignedToId], references: [id])
+
+  @@index([organizationId, status])
+  @@index([issueId])
+  @@index([initiativeId])
 }
 
 model InitiativeSolution {
@@ -654,33 +734,37 @@ model SystemConfiguration {
 }
 
 model organizations {
-  id                 String               @id
-  name               String
-  slug               String               @unique
-  domain             String?              @unique
-  planTier           PlanTier             @default(PROFESSIONAL)
-  settings           Json                 @default("{}")
-  isActive           Boolean              @default(true)
-  createdAt          DateTime             @default(now())
-  updatedAt          DateTime
-  Attachment         Attachment[]
-  AuditLog           AuditLog[]
-  BusinessProfile    BusinessProfile[]
-  Comment            Comment[]
-  Idea               Idea[]
-  Initiative         Initiative[]
-  InitiativeSolution InitiativeSolution[]
-  Issue              Issue[]
-  IssueCluster       IssueCluster[]
-  Milestone          Milestone[]
-  RequirementCard    RequirementCard[]
-  ResourceAssignment ResourceAssignment[]
-  SolutionTask       SolutionTask[]
-  SystemCategory     SystemCategory[]
-  Team               Team[]
-  User               User[]
-  Vote               Vote[]
-  usage_logs         usage_logs[]
+  id                       String                     @id
+  name                     String
+  slug                     String                     @unique
+  domain                   String?                    @unique
+  planTier                 PlanTier                   @default(PROFESSIONAL)
+  settings                 Json                       @default("{}")
+  isActive                 Boolean                    @default(true)
+  createdAt                DateTime                   @default(now())
+  updatedAt                DateTime
+  Attachment               Attachment[]
+  AuditLog                 AuditLog[]
+  BusinessProfile          BusinessProfile[]
+  Comment                  Comment[]
+  Idea                     Idea[]
+  Initiative               Initiative[]
+  InitiativeSolution       InitiativeSolution[]
+  Issue                    Issue[]
+  IssueCluster             IssueCluster[]
+  Milestone                Milestone[]
+  RequirementCard          RequirementCard[]
+  ResourceAssignment       ResourceAssignment[]
+  SolutionTask             SolutionTask[]
+  SystemCategory           SystemCategory[]
+  Team                     Team[]
+  User                     User[]
+  Vote                     Vote[]
+  usage_logs               usage_logs[]
+  aiClientModel            AIClientModel?
+  aiRecommendationFeedback AIRecommendationFeedback[]
+  Solution                 Solution[]
+  aiPerformanceMetrics     AIPerformanceMetric[]
 
   @@index([planTier, isActive])
   @@index([slug])

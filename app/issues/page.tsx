@@ -6,10 +6,11 @@ import { useRouter } from 'next/navigation';
 import SmartFormValidation from '@/components/SmartFormValidation';
 import { ValidationResult } from '@/lib/smart-form-validation';
 import { systemConfig } from '@/lib/system-config';
-import AIAnalysis from './ai-analysis';
+
 import ClusteringView from './clustering-view';
 import AIClusters from './ai-clusters';
 import AISummary from '@/components/AISummary';
+import ExecutiveClusteringView from '@/components/ExecutiveClusteringView';
 import { trackEvent } from '@/utils/analytics';
 import { useToast } from '@/components/ToastProvider';
 
@@ -41,7 +42,7 @@ export default function IssuesPage() {
   const [newIssue, setNewIssue] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'overview' | 'report' | 'browse' | 'ai-analysis'>(
+  const [activeTab, setActiveTab] = useState<'overview' | 'report' | 'browse' | 'executive'>(
     'overview'
   );
   const [selectedIssues, setSelectedIssues] = useState<Set<string>>(new Set());
@@ -532,16 +533,17 @@ export default function IssuesPage() {
                 {issues.length}
               </span>
             </button>
+
             <button
-              onClick={() => setActiveTab('ai-analysis')}
+              onClick={() => setActiveTab('executive')}
               className={`py-3 px-3 sm:px-4 border-b-2 font-medium text-sm transition-colors flex items-center gap-2 whitespace-nowrap ${
-                activeTab === 'ai-analysis'
+                activeTab === 'executive'
                   ? 'border-blue-500 text-blue-600'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               }`}
             >
-              🧠 AI Analysis
-              <span className="bg-blue-100 text-blue-600 px-2 py-0.5 rounded-full text-xs">AI</span>
+              🏛️ Executive View
+              <span className="bg-green-100 text-green-600 px-2 py-0.5 rounded-full text-xs">Business</span>
             </button>
           </nav>
         </div>
@@ -603,16 +605,7 @@ export default function IssuesPage() {
                     <div className="text-sm text-gray-600">View, vote & manage existing issues</div>
                   </div>
                 </button>
-                <button
-                  onClick={() => setActiveTab('ai-analysis')}
-                  className="flex items-center gap-3 p-4 bg-purple-50 hover:bg-purple-100 rounded-lg transition-colors"
-                >
-                  <span className="text-2xl">🧠</span>
-                  <div className="text-left">
-                    <div className="font-medium">AI Insights</div>
-                    <div className="text-sm text-gray-600">Strategic analysis</div>
-                  </div>
-                </button>
+
               </div>
             </div>
           </div>
@@ -1248,16 +1241,25 @@ Example: 'Our project approval process takes 3-4 weeks due to unclear requiremen
           </div>
         )}
 
-        {activeTab === 'ai-analysis' && (
+
+
+        {activeTab === 'executive' && (
           <div className="space-y-8">
-            <AIClusters
-              onSelectAll={(ids) => {
-                const next = new Set(selectedIssues);
-                ids.forEach((id) => next.add(id));
-                setSelectedIssues(next);
-                setMessage(`${ids.length} issues added by AI grouping`);
-              }}
-            />
+            <div className="bg-gradient-to-r from-blue-50 to-green-50 rounded-lg p-6 border border-blue-200">
+              <div className="flex items-center space-x-3 mb-4">
+                <span className="text-2xl">🏛️</span>
+                <div>
+                  <h2 className="text-xl font-semibold text-gray-900">Executive Business View</h2>
+                  <p className="text-sm text-gray-600">Issues organized by business impact and strategic importance</p>
+                </div>
+              </div>
+              <div className="text-xs text-blue-700 bg-blue-100 rounded p-2">
+                <strong>For Executives:</strong> This view transforms technical issue categories into business-relevant areas 
+                for strategic decision making. Strategic issues require immediate executive attention, operational issues 
+                affect daily productivity, and tactical issues are implementation-specific concerns.
+              </div>
+            </div>
+            <ExecutiveClusteringView />
           </div>
         )}
       </div>

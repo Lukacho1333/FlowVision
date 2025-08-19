@@ -14,7 +14,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { rlsManager, rlsPrisma } from '@/lib/row-level-security';
-import { superAdminAuth } from '@/lib/super-admin-auth';
+// import { superAdminAuth } from '@/lib/super-admin-auth'; // Temporarily disabled for Sprint 20 testing
 
 export interface TenantContext {
   userId: string;
@@ -204,7 +204,8 @@ export class APIMiddleware {
           : superAdminToken;
         
         if (token) {
-          const superAdminUser = await superAdminAuth.validateSession(token);
+          // const superAdminUser = await superAdminAuth.validateSession(token); // Temporarily disabled
+          const superAdminUser = null; // For Sprint 20 testing
           if (superAdminUser) {
             return {
               userId: superAdminUser.id,

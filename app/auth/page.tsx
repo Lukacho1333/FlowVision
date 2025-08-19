@@ -20,7 +20,7 @@ export default function AuthPage() {
     }
   }, [session, router]);
 
-  // Demo users from Morrison A&E
+  // Morrison A&E demo accounts - comprehensive Sprint 20 showcase
   const demoUsers = [
     {
       email: 'david.morrison@morrisonae.com',
@@ -52,6 +52,12 @@ export default function AuthPage() {
       role: 'Engineering Director',
       description: 'Technical systems and compliance oversight',
     },
+    {
+      email: 'rachel.gonzalez@morrisonae.com',
+      name: 'Rachel Gonzalez',
+      role: 'Senior Architect',
+      description: 'Design execution and technical coordination',
+    }
   ];
 
   const handleDemoLogin = (demoEmail: string) => {
@@ -97,7 +103,10 @@ export default function AuthPage() {
         </p>
         <div className="mt-4 bg-blue-50 border border-blue-200 rounded-lg p-3">
           <p className="text-center text-xs text-blue-700 font-medium">
-            🏗️ DEMO ENVIRONMENT: Morrison AE - 75+ Employee Architecture Firm
+            🏗️ SPRINT 20 AI REVOLUTION DEMO: Morrison A&E - Complete Architecture Firm Showcase
+          </p>
+          <p className="text-center text-xs text-blue-600 mt-1">
+            Full feature coverage: Issues → Clusters → Initiatives → Solutions → AI Learning
           </p>
         </div>
       </div>
