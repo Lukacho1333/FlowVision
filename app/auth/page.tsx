@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
 export default function AuthPage() {
-  const [email, setEmail] = useState('david.morrison@morrisonae.com');
+  const [email, setEmail] = useState('admin@test.com');
   const [password, setPassword] = useState('Admin123!');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -20,38 +20,20 @@ export default function AuthPage() {
     }
   }, [session, router]);
 
-  // Demo users from Morrison A&E
+  // Demo test accounts for Sprint 20 testing
   const demoUsers = [
     {
-      email: 'david.morrison@morrisonae.com',
-      name: 'David Morrison',
-      role: 'Principal/CEO',
-      description: 'Strategic oversight and executive decision-making',
+      email: 'admin@test.com',
+      name: 'Test Admin',
+      role: 'Administrator',
+      description: 'Admin access for Sprint 20 AI features testing',
     },
     {
-      email: 'sarah.chen@morrisonae.com',
-      name: 'Sarah Chen',
-      role: 'Design Director',
-      description: 'Creative leadership and design process management',
-    },
-    {
-      email: 'mike.rodriguez@morrisonae.com',
-      name: 'Mike Rodriguez',
-      role: 'Project Director',
-      description: 'Operations delivery and project coordination',
-    },
-    {
-      email: 'jennifer.kim@morrisonae.com',
-      name: 'Jennifer Kim',
-      role: 'Business Development Director',
-      description: 'Growth strategy and client relationship management',
-    },
-    {
-      email: 'alex.thompson@morrisonae.com',
-      name: 'Alex Thompson',
-      role: 'Engineering Director',
-      description: 'Technical systems and compliance oversight',
-    },
+      email: 'user@test.com',
+      name: 'Test User',
+      role: 'Team Leader',
+      description: 'Standard user access for feature testing',
+    }
   ];
 
   const handleDemoLogin = (demoEmail: string) => {
