@@ -441,21 +441,24 @@ model AIUserQuota {
 }
 
 model AIPerformanceMetric {
-  id           String   @id @default(cuid())
-  operation    String
-  model        String
-  avgLatency   Int      @default(0)
-  avgCost      Float    @default(0)
-  avgQuality   Int      @default(100)
-  successRate  Float    @default(1.0)
-  cacheHitRate Float    @default(0.0)
-  requestCount Int      @default(0)
-  totalTokens  Int      @default(0)
-  date         DateTime
-  createdAt    DateTime @default(now())
+  id             String         @id @default(cuid())
+  operation      String
+  model          String
+  avgLatency     Int            @default(0)
+  avgCost        Float          @default(0)
+  avgQuality     Int            @default(100)
+  successRate    Float          @default(1.0)
+  cacheHitRate   Float          @default(0.0)
+  requestCount   Int            @default(0)
+  totalTokens    Int            @default(0)
+  date           DateTime
+  createdAt      DateTime       @default(now())
+  organizationId String?
+  organizations  organizations? @relation(fields: [organizationId], references: [id])
 
   @@unique([operation, model, date])
   @@index([date])
+  @@index([organizationId])
 }
 
 model AICacheEntry {
