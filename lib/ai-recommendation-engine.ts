@@ -69,7 +69,7 @@ class ClientAIModel {
 
       if (storedModel) {
         this.modelVersion = storedModel.version;
-        this.lastTraining = storedModel.lastTraining;
+        this.lastTraining = storedModel.lastTraining || new Date();
         
         // Parse stored learning data
         const parsedData = storedModel.learningData as any;
@@ -268,15 +268,15 @@ class ClientAIModel {
         create: {
           organizationId: this.organizationId,
           version: this.modelVersion,
+          modelData: learningDataSerialized as any,
           learningData: learningDataSerialized as any,
-          lastTraining: this.lastTraining,
-          createdAt: new Date()
+          lastTrainingAt: this.lastTraining
         },
         update: {
           version: this.modelVersion,
+          modelData: learningDataSerialized as any,
           learningData: learningDataSerialized as any,
-          lastTraining: this.lastTraining,
-          updatedAt: new Date()
+          lastTrainingAt: this.lastTraining
         }
       });
     } catch (error) {
@@ -319,7 +319,7 @@ export class AIRecommendationEngine {
       where: { id: issueId },
       include: {
         User: true,
-        votes: true
+        userVotes: true
       }
     });
 
@@ -545,8 +545,8 @@ export class AIRecommendationEngine {
         
         Solution: "${solution.title}"
         Description: "${solution.description}"
-        Initiative: "${solution.initiative.title}"
-        Related Issues: ${solution.initiative.addressedIssues.length}
+        Initiative: "${solution.initiative?.title || 'No Initiative'}"
+        Related Issues: ${solution.initiative?.addressedIssues?.length || 0}
         
         Respond with JSON:
         {
@@ -576,7 +576,7 @@ export class AIRecommendationEngine {
             reasoning: analysis.reasoning,
             metadata: {
               solutionTitle: solution.title,
-              initiativeTitle: solution.initiative.title
+              initiativeTitle: solution.initiative?.title || 'No Initiative'
             },
             createdAt: new Date()
           });
@@ -606,7 +606,9 @@ export class AIRecommendationEngine {
         userId,
         organizationId,
         accepted,
-        timestamp: new Date()
+        confidence: recommendationData?.confidence || 0.5,
+        recommendationType: recommendationType || 'general',
+        metadata: recommendationData || {}
       }
     });
 
