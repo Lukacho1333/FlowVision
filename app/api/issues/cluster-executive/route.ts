@@ -78,7 +78,7 @@ export async function GET(request: NextRequest) {
         operationalIssues: executiveView.operationalIssues,
         tacticalIssues: executiveView.tacticalIssues,
         activeClusters: executiveView.businessAreas.reduce(
-          (sum, area) => sum + area.clusters.filter(c => c.issueCount > 0).length, 
+          (sum, area) => sum + area.clusters.filter(c => (c.issueCount || 0) > 0).length, 
           0
         ),
       },
@@ -182,11 +182,15 @@ export async function POST(request: NextRequest) {
     const executiveView = categorizeIssuesForExecutives(issues);
 
     // Create/update clusters based on executive structure
-    const clusterUpdates = [];
+    const clusterUpdates: Array<{
+      cluster: any;
+      businessArea: any;
+      issues: any[];
+    }> = [];
 
     for (const area of executiveView.businessAreas) {
       for (const cluster of area.clusters) {
-        if (cluster.issueCount > 0) {
+        if ((cluster.issueCount || 0) > 0) {
           // Find matching issues for this cluster
           const matchingIssues = issues.filter(issue => {
             const category = issue.category || 'Process';
@@ -240,7 +244,7 @@ export async function POST(request: NextRequest) {
         // Update issues to reference this cluster
         await tx.issue.updateMany({
           where: { 
-            id: { in: update.issues.map(i => i.id) },
+            id: { in: update.issues.map((i: any) => i.id) },
             organizationId: user.organizationId,
           },
           data: { clusterId: newCluster.id },
@@ -249,7 +253,7 @@ export async function POST(request: NextRequest) {
         createdClusters.push({
           ...newCluster,
           businessArea: update.businessArea.name,
-          issueIds: update.issues.map(i => i.id),
+          issueIds: update.issues.map((i: any) => i.id),
         });
       }
 

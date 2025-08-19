@@ -225,7 +225,7 @@ export function categorizeIssuesForExecutives(issues: any[]): ExecutiveClusterVi
 
         // Check keyword matches
         const keywordMatches = cluster.keywords.filter(keyword =>
-          keywords.some(k => k.toLowerCase().includes(keyword.toLowerCase())) ||
+          keywords.some((k: string) => k.toLowerCase().includes(keyword.toLowerCase())) ||
           description.toLowerCase().includes(keyword.toLowerCase())
         ).length;
         score += keywordMatches * 2;
@@ -263,7 +263,7 @@ export function categorizeIssuesForExecutives(issues: any[]): ExecutiveClusterVi
   // Calculate average scores
   businessAreasWithData.forEach(area => {
     area.clusters.forEach(cluster => {
-      if (cluster.issueCount > 0) {
+      if ((cluster.issueCount || 0) > 0) {
         cluster.averageScore = Math.round(cluster.averageScore / cluster.issueCount);
       }
     });
@@ -291,23 +291,23 @@ export function getExecutivePriorities(clusterView: ExecutiveClusterView): {
 
   for (const area of clusterView.businessAreas) {
     for (const cluster of area.clusters) {
-      if (cluster.issueCount > 0) {
+      if ((cluster.issueCount || 0) > 0) {
         let priority: 'critical' | 'high' | 'medium' | 'low' = 'low';
         let rationale = '';
 
         // Determine priority based on impact level, issue count, and average score
-        if (cluster.impactLevel === 'strategic' && cluster.issueCount >= 3) {
+        if (cluster.impactLevel === 'strategic' && (cluster.issueCount || 0) >= 3) {
           priority = 'critical';
-          rationale = `Strategic impact with ${cluster.issueCount} issues affecting core business operations`;
-        } else if (cluster.impactLevel === 'strategic' || (cluster.issueCount >= 4 && cluster.averageScore >= 75)) {
+          rationale = `Strategic impact with ${cluster.issueCount || 0} issues affecting core business operations`;
+        } else if (cluster.impactLevel === 'strategic' || ((cluster.issueCount || 0) >= 4 && (cluster.averageScore || 0) >= 75)) {
           priority = 'high';
-          rationale = `High business impact with ${cluster.issueCount} issues (avg score: ${cluster.averageScore})`;
-        } else if (cluster.issueCount >= 2 && cluster.averageScore >= 60) {
+          rationale = `High business impact with ${cluster.issueCount || 0} issues (avg score: ${cluster.averageScore || 0})`;
+        } else if ((cluster.issueCount || 0) >= 2 && (cluster.averageScore || 0) >= 60) {
           priority = 'medium';
-          rationale = `Moderate impact requiring attention (${cluster.issueCount} issues)`;
+          rationale = `Moderate impact requiring attention (${cluster.issueCount || 0} issues)`;
         } else {
           priority = 'low';
-          rationale = `Lower priority with ${cluster.issueCount} issues`;
+          rationale = `Lower priority with ${cluster.issueCount || 0} issues`;
         }
 
         priorities.push({
